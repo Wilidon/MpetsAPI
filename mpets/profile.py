@@ -5,7 +5,7 @@ from aiohttp import ClientSession, ClientTimeout
 from bs4 import BeautifulSoup
 
 
-async def profile(cookies, connector):
+async def profile(pet_id, cookies, connector):
     try:
         club = rank_club = family_id = family_name = club_const = club_day = effect = None
         last_login = "online"

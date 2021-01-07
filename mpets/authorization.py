@@ -3,32 +3,32 @@ import string
 
 from aiohttp import ClientTimeout, ClientSession
 
-from mpetsapi.profile import profile
-from mpetsapi.settings import change_pw
+from mpets.profile import profile
+from mpets.settings import change_pw
 
 
-async def start(name, password, type, connector):
+async def start(name, password, type, timeout, connector):
     try:
         if name == "standard":
-            async with ClientSession(timeout=ClientTimeout(total=10), connector=connector) as session:
-                await session.get('http://mpets.mobi/start')
-                resp = await session.get('http://mpets.mobi/save_gender?type=' + str(type))
+            async with ClientSession(timeout=timeout, connector=connector) as session:
+                await session.get("https://mpets.mobi/start")
+                resp = await session.get(f"https://mpets.mobi/save_gender?type={type}")
                 if "Магазин" in await resp.text():
-                    cookies = session.cookie_jar.filter_cookies('http://mpets.mobi')
+                    cookies = session.cookie_jar.filter_cookies("https://mpets.mobi")
                     for key, cookie in cookies.items():
                         if cookie.key == "PHPSESSID":
                             cookies = {'PHPSESSID': cookie.value}
                         if cookie.key == "id":
                             pet_id = cookie.value
                     if password:
-                        resp = await change_pw(password, cookies, connector)
+                        resp = await change_pw(password, cookies, timeout, connector)
                     else:
                         password = (''.join(random.sample(string.ascii_lowercase, k=10)))
-                        resp = await change_pw(password, cookies, connector)
-                    if resp['status'] == 'error':
+                        resp = await change_pw(password, cookies, timeout, connector)
+                    if resp["status"] == "error":
                         return resp
-                    resp = await profile(pet_id, cookies, connector)
-                    if resp['status'] == 'error':
+                    resp = await profile(pet_id, cookies, timeout, connector)
+                    if resp["status"] == "error":
                         return resp
                     return {"status": "ok",
                             "pet_id": pet_id,
@@ -39,6 +39,7 @@ async def start(name, password, type, connector):
                     pass
                 elif "" in await resp.text():
                     pass
+            
     except Exception as e:
         return {"status": "error",
                 "code": 1,

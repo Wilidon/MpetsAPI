@@ -13,14 +13,19 @@ async def change_name(name, cookies):
     pass
 
 
-async def change_pw(password, cookies, connector=None):
+async def change_pw(password, cookies, timeout, connector):
     try:
         if 3 <= len(password) <= 20:
-            async with ClientSession(timeout=ClientTimeout(total=10), cookies=cookies,
+            async with ClientSession(cookies=cookies, timeout=timeout,
                                      connector=connector) as session:
-                resp = await session.post('http://mpets.mobi/change_pw', data={'pw': password})
+                data = {'pw': password}
+                resp = await session.post("http://mpets.mobi/change_pw", data=data)
                 if "Пароль успешно изменен!" in await resp.text():
-                    return {"status": "ok",
+                    return {"status": True,
+                            "password": password}
+                elif "Вы кликаете слишком быстро." in await resp.text():
+                    mpets = MpetsApi()
+                    return {"status": True,
                             "password": password}
                 else:
                     #TODO error code

@@ -1,17 +1,28 @@
-from mpetsapi import authorization, forum, main, profile, club
-
-
+from mpets import authorization, forum, main, profile, club
+from .api import make_get_request, make_post_request
+import aiohttp
 class MpetsApi:
-    def __init__(self, name=None, password=False, cookies=None, pet_id=None, connector=None):
-        self.name = name
-        self.password = password
-        self.connector = connector
+    def __init__(self, name: str = None, password: str = None,
+                cookies: str = None, timeout: int = 5,
+                connector: dict = None, fast_mode: bool = True):
+        self.pet_id: int = None
+        self.name: str = name
+        self.password: str = password
+        self.timeout = aiohttp.ClientTimeout(total=timeout)
+        self.connector: dict = connector
+        fast_mode: bool = fast_mode
+        self.beauty: int = None
+        self.beauty: int = None
+        self.beauty: int = None
+        self.beauty: int = None
+        self.beauty: int = None
 
-    '''
-        Модуль: authorization.py
-    '''
-
-    async def start(self, name="standard", password=False, type=1):
+        if fast_mode is False:
+            ...
+    
+    async def start(self, name: str = "standard",
+                        password: str = None,
+                        type: int = 1):
         """ Регистрация питомца
 
             Args:
@@ -26,10 +37,14 @@ class MpetsApi:
                 cookies (dict): Куки.
         """
         resp = await authorization.start(name=name, password=password, type=type, connector=self.connector)
-        if resp['status'] == 'ok':
+        if resp['status']:
             self.cookies = resp['cookies']
             self.pet_id = resp['pet_id']
         return resp
+
+    async def test_s(self):
+        return await make_get_request(method="/chat", cookies=self.cookies,
+                                timeout=self.timeout, connector=self.connector)
 
     async def login(self):
         """ Авторизация
