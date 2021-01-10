@@ -29,7 +29,7 @@ async def start(name, password, type, timeout, connector):
                         resp = await change_pw(password, cookies, timeout, connector)
                     if resp["status"] is False:
                         return resp
-                    resp = await profile(pet_id, cookies, timeout, connector)
+                    resp = await profile(cookies, timeout, connector)
                     if resp["status"] is False:
                         return resp
                     return {"status": True,
@@ -39,6 +39,8 @@ async def start(name, password, type, timeout, connector):
                             "cookies": cookies}
                 elif "" in await resp.text():
                     pass
+        else:
+            pass
     except Exception as e:
         return {"status": False,
                 "code": 0,

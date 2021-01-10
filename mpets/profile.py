@@ -5,11 +5,11 @@ from aiohttp import ClientSession, ClientTimeout
 from bs4 import BeautifulSoup
 
 
-async def profile(pet_id, cookies, connector):
+async def profile(cookies, timeout, connector):
     try:
         club = rank_club = family_id = family_name = club_const = club_day = effect = None
         last_login = "online"
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                          connector=connector) as session:
             prof = await session.get("http://mpets.mobi/profile")
             prof = BeautifulSoup(await prof.read(), 'lxml')
