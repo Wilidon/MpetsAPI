@@ -1,13 +1,15 @@
 from mpets import authorization, forum, main, profile, club
-from .api import make_get_request, make_post_request
 import aiohttp
+
+
 class MpetsApi:
     def __init__(self, name: str = None, password: str = None,
-                cookies: str = None, timeout: int = 5,
-                connector: dict = None, fast_mode: bool = True):
+                 cookies: str = None, timeout: int = 5,
+                 connector: dict = None, fast_mode: bool = True):
         self.pet_id: int = None
         self.name: str = name
         self.password: str = password
+        self.cookies = cookies
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.connector: dict = connector
         fast_mode: bool = fast_mode
@@ -19,61 +21,81 @@ class MpetsApi:
 
         if fast_mode is False:
             ...
-    
+
     async def start(self, name: str = "standard",
-                        password: str = None,
-                        type: int = 1):
+                    password: str = None,
+                    type: int = 1):
         """ Регистрация питомца
 
             Args:
-                name (str): Имя аккаунта (default: стандартный);
-                password (str): Пароль аккаунта (default: генерируется 10-значный);
-                type (int): Тип аватарки (default: 1).
+                name (str): имя аккаунта (default: стандартный);
+                password (str): пароль аккаунта (default: генерируется 10-значный);
+                type (int): тип аватарки (default: 1).
 
             Resp:
+                status (bool): статус запроса;
                 pet_id (int): id аккаунта;
-                name (str): Имя аккаунта;
-                password (str): Пароль от аккаунта;
-                cookies (dict): Куки.
+                name (str): имя аккаунта;
+                password (str): пароль от аккаунта;
+                cookies (dict): куки.
         """
-        resp = await authorization.start(name=name, password=password, type=type, connector=self.connector)
-        if resp['status']:
-            self.cookies = resp['cookies']
-            self.pet_id = resp['pet_id']
+        resp = await authorization.start(name=name, password=password, type=type,
+                                         timeout=self.timeout, connector=self.connector)
+        if resp["status"]:
+            self.cookies = resp["cookies"]
+            self.pet_id = resp["pet_id"]
         return resp
-
-    async def test_s(self):
-        return await make_get_request(method="/chat", cookies=self.cookies,
-                                timeout=self.timeout, connector=self.connector)
 
     async def login(self):
         """ Авторизация
 
             Resp:
-                cookies (dict): Куки
+                status (bool): статус запроса;
+                pet_id (int): id аккаунта;
+                name (str): имя аккаунта;
+                cookies (dict): куки.
         """
-        resp = await authorization.login(name=self.name, password=self.password, connector=self.connector)
-        if resp['status'] == 'ok':
-            self.cookies = resp['cookies']
-            self.pet_id = resp['pet_id']
+        resp = await authorization.login(name=self.name, password=self.password,
+                                         timeout=self.timeout, connector=self.connector)
+        if resp["status"]:
+            self.cookies = resp["cookies"]
+            self.pet_id = resp["pet_id"]
         return resp
-
-    '''
-        Модуль: main.py
-    '''
 
     async def actions(self):
         """ Три раза кормит, играет и ходит на выставку
         """
-        return await main.actions(cookies=self.cookies, connector=self.connector)
+        return await main.actions(cookies=self.cookies,
+                                  timeout=self.timeout,
+                                  connector=self.connector)
+
+    async def action(self, action: str, rand: int = 1):
+        """ Выполняет дейсвтие с питомцем
+
+        Args:
+            actions (str): вид дейсвтия;
+            rand (int): случайное число (default: 1).
+
+        Resp:
+            status (bool): статус запроса;
+        """
+        return await main.action(action=action, rand=rand, cookies=self.cookies,
+                                 timeout=self.timeout, connector=self.connector)
+
+    async def show(self):
+        # TODO
+        return await main.show(cookies=self.cookies, timeout=self.timeout,
+                               connector=self.connector)
 
     async def wakeup_sleep_info(self):
-        pass
-        # return action.wakeup_sleep_info(cookies=cookies)
+        # TODO
+        return await main.wakeup_sleep_info(cookies=self.cookies, timeout=self.timeout,
+                                            connector=self.connector)
 
     async def wakeup_sleep(self):
-        pass
-        # return action.wakeup_sleep(cookies=cookies)'''
+        # TODO
+        return await main.wakeup_sleep(cookies=self.cookies, timeout=self.timeout,
+                                            connector=self.connector)
 
     async def wakeup(self):
         """ Дает витаминку за 5 сердец и пропускает минутный сон
@@ -201,7 +223,7 @@ class MpetsApi:
                name (str): имя аккаунта;
                account_status (str): информация о бане.
        """
-        return await main.search_pet(name, self.cookies, self.connector)
+        return await main.find_pet(name, self.cookies, self.connector)
 
     async def search_club(self, name):
         pass

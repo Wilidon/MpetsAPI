@@ -1,0 +1,1 @@
+MPETS_URL = "https://mpets.mobi/"

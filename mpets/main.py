@@ -1,58 +1,64 @@
 import asyncio
 from aiohttp import ClientSession, ClientTimeout
 
+from mpets.utils.constants import MPETS_URL
 
-async def actions(cookies, connector):
+
+async def actions(cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
             for a in range(3):
                 for b in range(5):
-                    await session.get("http://mpets.mobi/?action=food&rand=1")
+                    await session.get(f"{MPETS_URL}/?action=food&rand=1")
                     await asyncio.sleep(0.4)
-                    await session.get("http://mpets.mobi/?action=play&rand=1")
-                    await asyncio.sleep(0.4)
+                    await session.get(f"{MPETS_URL}/?action=play&rand=1")
                     while True:
-                        r = await session.get('https://mpets.mobi/show')
+                        resp = await session.get(f"{MPETS_URL}/show")
                         await asyncio.sleep(0.4)
-                        if "Соревноваться" in await r.text():
-                            await session.get('https://mpets.mobi/show')
+                        if "Соревноваться" in await resp.text():
+                            await session.get(f"{MPETS_URL}/show")
                             await asyncio.sleep(0.4)
                         else:
                             break
-                await wakeup(cookies, connector)
+                resp = await wakeup(cookies, timeout, connector)
+                if resp["status"] is False:
+                    await session.close(); return resp
             await session.close()
-        return {'status': 'ok'}
+        return {"status": True}
     except Exception as e:
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-def action_food(cookies):
+def action(action, rand, cookies, timeout, connector):
     pass
 
 
-def action_play(cookies):
+def show(cookies, timeout, connector):
     pass
 
 
-def show(cookies):
+async def wakeup_sleep_info(cookies, timeout, connector):
     pass
 
 
-async def wakeup_sleep_info(cookies):
+def wakeup_sleep(cookies, timeout, connector):
     pass
 
 
-def wakeup_sleep(cookies):
-    pass
-
-
-async def wakeup(cookies, connector):
-    async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
-                             connector=connector) as session:
-        await session.get("http://mpets.mobi/wakeup")
-        await session.close()
-        return {'status': 'ok'}
+async def wakeup(cookies, timeout, connector):
+    try:
+        async with ClientSession(cookies=cookies, timeout=timeout,
+                                 connector=connector) as session:
+            await session.get(f"{MPETS_URL}/wakeup")
+            await session.close()
+            return {"status": True}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def charm(cookies, connector):
@@ -107,16 +113,17 @@ async def glade(cookies, connector):
     pass
 
 
-async def glade_dig(cookies, connector):
+async def glade_dig(cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            await session.get("http://mpets.mobi/glade_dig")
+            await session.get(f"{MPETS_URL}/glade_dig")
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
-        # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def travel(cookies, connector):
@@ -183,27 +190,37 @@ async def best(type, page, cookies, connector):
     pass
 
 
-async def search_pet(name, cookies, connector):
+async def find_pet(name, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            data, account_status = {'name': name}, None
-            resp = await session.post("http://mpets.mobi/find_pet", data=data)
-            if "Имя должно быть от 3 до 12 символов!" in await resp.text():
-                return {'status': 'error', 'code': 0, 'msg': ''}
+            data, account_status = {"name": name}, None
+            resp = await session.post(f"{MPETS_URL}/find_pet", data=data)
+            await session.close()
+            if "Вы кликаете слишком быстро" in await resp.text():
+                return await find_pet(name, cookies, timeout, connector)
+            elif "Имя должно быть от 3 до 12 символов!" in await resp.text():
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Имя должно быть от 3 до 13 символов"}
             elif "Питомец не найден!" in await resp.text():
-                return {'status': 'error', 'code': 0, 'msg': ''}
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Питомец не найден!"}
             elif "Игрок заблокирован" in await resp.text():
-                account_status = 'block'
+                account_status = "block"
             elif "Игрок забанен" in await resp.text():
-                account_status = 'ban'
+                account_status = "ban"
             elif "view_profile" in str(resp.url):
                 pet_id = str(resp.url).split("id=")[1].split("&")[0]
-            await session.close()
-            return {'status': 'ok', 'pet_id': pet_id, 'name': name, 'account_status': account_status}
+            return {"status": True,
+                    "pet_id": pet_id,
+                    "name": name,
+                    "account_status": account_status}
     except Exception as e:
-        # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def show_coin(cookies, connector):
