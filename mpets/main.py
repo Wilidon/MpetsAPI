@@ -126,11 +126,11 @@ async def glade_dig(cookies, timeout, connector):
                 "msg": e}
 
 
-async def travel(cookies, connector):
+async def travel(cookies, timeout, connector):
     pass
 
 
-async def go_travel(travel_id, cookies, connector):
+async def go_travel(travel_id, cookies, timeout, connector):
     pass
 
 
@@ -221,6 +221,10 @@ async def find_pet(name, cookies, timeout, connector):
         return {"status": False,
                 "code": 0,
                 "msg": e}
+
+
+async def find_club(name, cookies, timeout, connector):
+    pass
 
 
 async def show_coin(cookies, connector):
