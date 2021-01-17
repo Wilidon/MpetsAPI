@@ -8,11 +8,7 @@ async def threads(forum_id, page, cookies, timeout, connector):
     try:
         async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-<<<<<<< HEAD
-            params = {'id': forum_id, 'page': page}
-=======
             params = {"id": forum_id, "page": page}
->>>>>>> ba5aae56a351c8059cb89f9b45882ac3d97a999d
             resp = await session.get(f"{MPETS_URL}/threads", params=params)
             await session.close()
             if "Вы кликаете слишком быстро." in await resp.read():
@@ -24,16 +20,6 @@ async def threads(forum_id, page, cookies, timeout, connector):
             a = link["href"]
             links.append(str(a))
         links = [i.split("=")[1] for i in links if "thread?id" in i]
-<<<<<<< HEAD
-        links = [int(i.rsplit("&")[0]) for i in links]
-        if links:
-            return {"status": True, "threads": links}
-        else:
-            return {"status": False, "code": 0, "msg": "Топиков нет"}
-    except Exception as e:
-        # TODO
-        return {"status": False, "code": 0, "msg": e}
-=======
         links = [i.rsplit("&")[0] for i in links]
         if links:
             return {"status": True,
@@ -47,7 +33,6 @@ async def threads(forum_id, page, cookies, timeout, connector):
         return {'status': False,
                 'code': 0,
                 'msg': e}
->>>>>>> ba5aae56a351c8059cb89f9b45882ac3d97a999d
 
 
 async def thread(thread_id, page, cookies, timeout, connector):
@@ -65,17 +50,6 @@ async def thread(thread_id, page, cookies, timeout, connector):
                 return await thread(thread_id, page, cookies,
                                     timeout, connector)
             elif "Сообщений нет" in resp_text:
-<<<<<<< HEAD
-                # TODO
-                return {"status": "error",
-                        "code": 0,
-                        "msg": "Сообщений нет"}
-            elif "Форум/Топик не найден или был удален" in resp_text:
-                # TODO
-                return {"status": False,
-                        "code": 0,
-                        "msg": "Форум/Топик не найден или был удален"}
-=======
                 return {"status": False,
                         "code": 0,
                         "msg": "Сообщений нет."}
@@ -83,7 +57,6 @@ async def thread(thread_id, page, cookies, timeout, connector):
                 return {"status": False,
                         "code": 0,
                         "msg": "Форум/Топик не найден или был удален."}
->>>>>>> ba5aae56a351c8059cb89f9b45882ac3d97a999d
             for a in range(len(resp.find_all("div", {"class": "thread_title"}))):
                 thread_name = resp.find("div", {"class": "ttl lgreen mrg_ttl mt10"})
                 thread_name = thread_name.find("div", {"class": "tc"}).next_element
@@ -95,25 +68,16 @@ async def thread(thread_id, page, cookies, timeout, connector):
                 post_date = resp.find_all("div", {"class": "thread_title"})[a]
                 post_date = post_date.find("span", {"class": "post_date nowrap"}).next_element
                 message_id = (15 * (int(page) - 1)) + a + 1
-<<<<<<< HEAD
-                message = dict(pet_id=int(pet_id), name=name, message_id=message_id,
-=======
                 message = dict(pet_id=int(pet_id), name=name,
                                message_id=message_id,
->>>>>>> ba5aae56a351c8059cb89f9b45882ac3d97a999d
                                message=message, post_date=post_date)
                 messages.append(message)
             if "закрыл(а) топик" in resp_text:
                 thread_status = "Закрыт"
-<<<<<<< HEAD
-                moderator_id = resp.find("div", {"class": "msg mrg_msg1 mt5 c_brown3"})
-                moderator_id = moderator_id.find("a", {"class": "pet_name"})["href"].split("=")[1]
-=======
                 moderator_id = resp.find("div",
                                          {"class": "msg mrg_msg1 mt5 c_brown3"})
                 moderator_id = moderator_id.find("a", {"class": "pet_name"})
                 moderator_id = moderator_id["href"].split("=")[1]
->>>>>>> ba5aae56a351c8059cb89f9b45882ac3d97a999d
                 moderator_id = int(moderator_id)
                 moderator_name = resp.find("div",
                                            {"class": "msg mrg_msg1 mt5 c_brown3"})
@@ -127,15 +91,9 @@ async def thread(thread_id, page, cookies, timeout, connector):
                     "messages": messages,
                     "thread_status": thread_status,
                     "moderator_id": moderator_id,
-<<<<<<< HEAD
-                    "moderator_name": moderator_name}
-    except Exception as e:
-        # TODO
-=======
                     "moderator_name": moderator_name
                     }
     except Exception as e:
->>>>>>> ba5aae56a351c8059cb89f9b45882ac3d97a999d
         return {"status": False,
                 "code": 0,
                 "msg": e}
