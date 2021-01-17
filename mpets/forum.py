@@ -11,7 +11,7 @@ async def threads(forum_id, page, cookies, timeout, connector):
             params = {"id": forum_id, "page": page}
             resp = await session.get(f"{MPETS_URL}/threads", params=params)
             await session.close()
-            if "Вы кликаете слишком быстро." in await resp.read():
+            if "Вы кликаете слишком быстро." in await resp.text():
                 return await threads(forum_id, page, cookies,
                                      timeout, connector)
             resp = BeautifulSoup(await resp.read(), "lxml")
@@ -30,6 +30,7 @@ async def threads(forum_id, page, cookies, timeout, connector):
                     "code": 15,
                     "msg": "На форуме нет топиков."}
     except Exception as e:
+        raise
         return {'status': False,
                 'code': 0,
                 'msg': e}
@@ -125,10 +126,18 @@ async def add_thread(forum_id, thread_name, thread_text, club_only,
                 return {"status": False,
                         "code": 0,
                         "msg": "Вы не являетесь участником клуба"}
+            elif "Заголовок должен быть от 2 до 24 символов" in await resp.text():
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Заголовок должен быть от 2 до 24 символов"}
+            elif "Содержание от 2 до 2500" in await resp.text():
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Содержание должно быть от 2 до 2500"}
             elif "Вы сможете создавать топики" in await resp.text():
                 return {"status": False,
                         "code": 0,
-                        "msg": "Вы можете создавать топики достигнув 18 уровня"}
+                        "msg": "Вы сможете создавать топики начиная с 18 уровня!"}
     except Exception as e:
         # TODO
         return {"status": False,
@@ -137,221 +146,279 @@ async def add_thread(forum_id, thread_name, thread_text, club_only,
                 "msg": e}
 
 
-async def add_vote(forum_id, thread_name, thread_text, vote1, vote2, vote3, vote4, vote5, club_only, cookies,
-                   connector):
+async def add_vote(forum_id, thread_name, thread_text, vote1,
+                   vote2, vote3, vote4, vote5, club_only, cookies,
+                   timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            data = {'thread_name': thread_name, 'forum_id': forum_id, 'thread_text': thread_text,
-                    'club_only': club_only, 'vote1': vote1, 'vote2': vote2, 'vote3': vote3,
-                    'vote4': vote4, 'vote5': vote5, 'vote': ''}
-            resp = await session.post("http://mpets.mobi/create_thread", data=data)
+            data = {"thread_name": thread_name, "forum_id": forum_id, "thread_text": thread_text,
+                    "club_only": club_only, "vote1": vote1, "vote2": vote2, "vote3": vote3,
+                    "vote4": vote4, "vote5": vote5, "vote": ""}
+            resp = await session.post(f"{MPETS_URL}/create_thread", data=data)
             await session.close()
             if vote1:
                 if "thread?id=" in str(resp.url):
                     thread_id = str(resp.url).split("=")[1].split("&")[0]
-                    return {'status': 'ok', 'thread_id': thread_id, 'thread_name': thread_name,
-                            'thread_text': thread_text}
+                    return {"status": True,
+                            "thread_id": thread_id,
+                            "thread_name": thread_name,
+                            "thread_text": thread_text,
+                            "vote1": vote1,
+                            "vote2": vote2,
+                            "vote3": vote3,
+                            "vote4": vote4,
+                            "vote5": vote5}
                 elif "Вы кликаете слишком быстро." in await resp.text():
                     return await add_vote(forum_id, thread_name, thread_text, vote1, vote2, vote3,
-                                          vote4, vote5, club_only, cookies, connector)
+                                          vote4, vote5, club_only, cookies, timeout, connector)
                 elif "Не удалось cоздать топик" in await resp.text():
-                    return {'status': 'error', 'code': 0, 'msg': 'Failed to create topic'}
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Не удалось создать топик"}
                 elif "Вы не являетесь участником клуба" in await resp.text():
-                    return {'status': 'error', 'code': 0,
-                            'msg': 'You are not a member of the club and can not create topics here'}
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Вы не являетесь участником клуба"}
                 elif "Вы сможете создавать топики" in await resp.text():
-                    return {'status': 'error', 'code': 0, 'msg': 'You can create topics starting at level 18!'}
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Вы сможете создавать топики начиная с 18 уровня!"}
                 elif "Заголовок должен быть от 2 до 24 символов" in await resp.text():
-                    return {'status': 'error', 'code': 0, 'msg': 'Заголовок должен быть от 2 до 24 символов'}
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Заголовок должен быть от 2 до 24 символов"}
                 elif "Содержание от 2 до 2500" in await resp.text():
-                    return {'status': 'error', 'code': 0, 'msg': 'Содержание от 2 до 2500'}
-                elif "Необходимо указать хотя бы один вариант опроса." in await resp.text() \
-                    or "Вариант должен быть от 2 до 24 символов" in await resp.text():
-                    return {'status': 'error', 'code': 0, 'msg': 'Необходимо указать хотя бы один вариант опроса. or '
-                                                                 'Вариант должен быть от 2 до 24 символов'}
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Содержание должно быть от 2 до 2500"}
+                elif "Необходимо указать хотя бы один вариант опроса." in await resp.text():
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Необходимо указать хотя бы один вариант опроса."}
+                elif "Вариант должен быть от 2 до 24 символов" in await resp.text():
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Вариант должен быть от 2 до 24 символов"}
             else:
-                return {'status': 'error', 'code': 100, 'msg': 'Incorrect args'}
+                return {"status": False,
+                        "code": 100,
+                        "msg": "Incorrect args"}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'thread_id': thread_id, 'msg': 'Failed to get thread'}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def thread_message(thread_id, message, cookies, connector):
+async def thread_message(thread_id, message, cookies, timeout, connector):
     try:
         if 1 < len(str(message)) < 2501:
-            async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+            async with ClientSession(cookies=cookies, timeout=timeout,
                                      connector=connector) as session:
-                data = {'message_text': message, 'thread_id': thread_id}
-                resp = await session.post("http://mpets.mobi/thread_message", data=data)
+                data = {"message_text": message, "thread_id": thread_id}
+                resp = await session.post(f"{MPETS_URL}/thread_message", data=data)
                 await session.close()
                 if "thread?id=" in await resp.text():
-                    return {'status': 'ok'}
+                    return {"status": True}
                 else:
-                    return {'status': 'error', 'code': 0, 'msg': 'Forum/Topic not found or was deleted'}
+                    return {"status": False,
+                            "code": 0,
+                            "msg": "Форум/Топик не найден или был удален."}
         else:
-            return {'status': 'error', 'code': 0, 'msg': 'The message must be between 2 and 2500 characters long'}
+            return {"status": False,
+                    "code": 0,
+                    "msg": "Сообщение должно быть от 2 до 2500 символов"}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': 'The message must be between 2 and 2500 characters long'}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def thread_vote(thread_id, vote, cookies, connector):
+async def thread_vote(thread_id, vote, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'vote_thread_id': thread_id, 'vote_forum_id': 3, 'vote': vote}
-            r = await session.get("http://mpets.mobi/thread_vote", params=params)
+            params = {"vote_thread_id": thread_id, "vote_forum_id": 3, "vote": vote}
+            await session.get(f"{MPETS_URL}/thread_vote", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': 'The message must be between 2 and 2500 characters long'}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def message_edit(message_id, thread_id, message, cookies, connector):
+async def message_edit(message_id, thread_id, message, cookies, timeout, connector):
     # TODO return post_edit_date
     try:
         if 1 < len(message) < 2501:
-            async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+            async with ClientSession(cookies=cookies, timeout=timeout,
                                      connector=connector) as session:
-                data = {'message_id': message_id, 'thread_id': thread_id, "page": 1, "message_text": message}
-                await session.post("http://mpets.mobi/update_message", data=data)
+                data = {"message_id": message_id, "thread_id": thread_id,
+                        "page": 1, "message_text": message}
+                await session.post(f"{MPETS_URL}/update_message", data=data)
                 await session.close()
-                return {'status': 'ok'}
+                return {"status": True}
         else:
-            return {'status': 'error', 'code': 0, 'msg': 'The message must be between 2 and 2500 characters long'}
+            return {"status": False,
+                    "code": 0,
+                    "msg": "Сообщение должно быть от 2 до 2500 символов"}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': 'The message must be between 2 and 2500 characters long'}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def message_delete(message_id, thread_id, cookies, connector):
+async def message_delete(message_id, thread_id, page, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': message_id, 'page': thread_id, 'thread': 733936}
-            await session.get("http://mpets.mobi/message_delete", params=params)
+            params = {"id": message_id, "page": page, "thread": thread_id}
+            await session.get(f"{MPETS_URL}/message_delete", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def delete_thread(thread_id, cookies, connector):
+async def delete_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id, 'confirm': 1, 'clear': 1}
-            await session.get("http://mpets.mobi/delete_thread", params=params)
+            params = {"id": thread_id, "confirm": 1, "clear": 1}
+            await session.get(f"{MPETS_URL}/delete_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
-        # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def edit_thread(thread_name, forum_id, thread_id, thread_text, cookies, club_only, connector):
+async def edit_thread(thread_name, forum_id, thread_id,
+                      thread_text, club_only, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            data = {'thread_name': thread_name, 'forum_id': forum_id, 'thread_id': thread_id,
-                    'first_message_id': 1, 'thread_text': thread_text}
-            await session.post("http://mpets.mobi/update_thread", data=data)
+            data = {"thread_name": thread_name, "forum_id": forum_id, "thread_id": thread_id,
+                    "first_message_id": 1, "thread_text": thread_text, "club_only": club_only}
+            await session.post(f"{MPETS_URL}/update_thread", data=data)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def restore_thread(thread_id, cookies, connector):
+async def restore_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id}
-            await session.get("http://mpets.mobi/restore_thread", params=params)
+            params = {"id": thread_id}
+            await session.get(f"{MPETS_URL}/restore_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def save_thread(thread_id, cookies, connector):
+async def save_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id}
-            await session.get("http://mpets.mobi/save_thread", params=params)
+            params = {"id": thread_id}
+            await session.get(f"{MPETS_URL}/save_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def unsave_thread(thread_id, cookies, connector):
+async def unsave_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id}
-            await session.get("http://mpets.mobi/unsave_thread", params=params)
+            params = {"id": thread_id}
+            await session.get(f"{MPETS_URL}/unsave_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def close_thread(thread_id, cookies, connector):
+async def close_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id}
-            await session.get("http://mpets.mobi/close_thread", params=params)
+            params = {"id": thread_id}
+            await session.get(f"{MPETS_URL}/close_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def open_thread(thread_id, cookies, connector):
+async def open_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id}
-            await session.get("http://mpets.mobi/open_thread", params=params)
+            params = {"id": thread_id}
+            await session.get(f"{MPETS_URL}/open_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def attach_thread(thread_id, cookies, connector):
+async def attach_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id}
-            await session.get("http://mpets.mobi/attach_thread", params=params)
+            params = {"id": thread_id}
+            await session.get(f"{MPETS_URL}/attach_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def detach_thread(thread_id, cookies, connector):
+async def detach_thread(thread_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            params = {'id': thread_id}
+            params = {"id": thread_id}
             await session.get("http://mpets.mobi/detach_thread", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {"status": False,
+                "code": 0,
+                "msg": e}

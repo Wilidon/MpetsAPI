@@ -11,11 +11,14 @@ API для игры Удивительные питомцы.
 Все доступные методы находятся в файле __init__.py
 ```python
 import asyncio
-from mpetsapi import MpetsApi
+from mpets import MpetsApi
 
 async def main():
     mpets = MpetsApi("nick", "password")
     await mpets.login()
+    
+    profile = await mpets.profile()
+    print(profile)
 
 asyncio.run(main())
 ```

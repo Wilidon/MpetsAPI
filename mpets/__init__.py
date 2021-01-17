@@ -1,3 +1,5 @@
+from box import Box
+
 from mpets import authorization, forum, main, profile, club
 import aiohttp
 
@@ -46,7 +48,7 @@ class MpetsApi:
         if resp["status"]:
             self.cookies = resp["cookies"]
             self.pet_id = resp["pet_id"]
-        return resp
+        return Box(resp)
 
     async def login(self):
         """ Авторизация
@@ -64,14 +66,15 @@ class MpetsApi:
         if resp["status"]:
             self.cookies = resp["cookies"]
             self.pet_id = resp["pet_id"]
-        return resp
+        return Box(resp)
 
     async def actions(self):
         """ Три раза кормит, играет и ходит на выставку
         """
-        return await main.actions(cookies=self.cookies,
+        resp = await main.actions(cookies=self.cookies,
                                   timeout=self.timeout,
                                   connector=self.connector)
+        return Box(resp)
 
     async def action(self, action: str, rand: int = 1):
         # TODO
@@ -84,64 +87,84 @@ class MpetsApi:
         Resp:
             status (bool): статус запроса;
         """
-        return await main.action(action=action, rand=rand,
+        resp = await main.action(action=action, rand=rand,
                                  cookies=self.cookies,
                                  timeout=self.timeout,
                                  connector=self.connector)
+        return Box(resp)
 
     async def show(self):
         # TODO
         """ Выставка
         """
-        return await main.show(cookies=self.cookies, timeout=self.timeout,
+        resp = await main.show(cookies=self.cookies,
+                               timeout=self.timeout,
                                connector=self.connector)
+        return Box(resp)
 
     async def wakeup_sleep_info(self):
         # TODO
         """ Информация о состоятии питомца.
         """
-        return await main.wakeup_sleep_info(cookies=self.cookies,
+        resp = await main.wakeup_sleep_info(cookies=self.cookies,
                                             timeout=self.timeout,
                                             connector=self.connector)
+        return Box(resp)
 
     async def wakeup_sleep(self):
         # TODO
         """ Разбудить питомца
         """
-        return await main.wakeup_sleep(cookies=self.cookies,
+        resp = await main.wakeup_sleep(cookies=self.cookies,
                                        timeout=self.timeout,
                                        connector=self.connector)
+        return Box(resp)
 
     async def wakeup(self):
         """ Дает витаминку за 5 сердец и пропускает минутный сон
         """
-        return main.wakeup(cookies=self.cookies, connector=self.connector)
+        resp = await main.wakeup(cookies=self.cookies,
+                           timeput=self.timeout,
+                           connector=self.connector)
+        return Box(resp)
 
     async def charm(self):
         # TODO
         """ Возвращает данные снежков
 
         """
-        return await main.charm(self.cookies, self.connector)
+        resp = await main.charm(cookies=self.cookies,
+                                timeout=self.timeout,
+                                connector=self.connector)
+        return Box(resp)
 
     async def charm_in_queue(self):
         # TODO
         """ Встать в очередь в снежках
 
         """
-        return await main.charm_in_queue(self.cookies, self.connector)
+        resp = await main.charm_in_queue(cookies=self.cookies,
+                                timeout=self.timeout,
+                                connector=self.connector)
+        return Box(resp)
 
     async def charm_out_queue(self):
         # TODO
         """ Покинуть очередь в снежках
         """
-        return await main.charm_out_queue(self.cookies, self.connector)
+        resp = await main.charm_out_queue(cookies=self.cookies,
+                                timeout=self.timeout,
+                                connector=self.connector)
+        return Box(resp)
 
     async def charm_attack(self):
         # TODO
         """ Бросить снежок
         """
-        return await main.charm_attack(self.cookies, self.connector)
+        resp = await main.charm_attack(cookies=self.cookies,
+                                timeout=self.timeout,
+                                connector=self.connector)
+        return Box(resp)
 
     async def charm_change(self):
         # TODO
@@ -182,6 +205,8 @@ class MpetsApi:
            Resp:
                status (bool): статус запроса;
        """
+        resp = ...
+        return Box(resp)
 
     async def glade_dig(self):
         """ Копать
@@ -189,7 +214,8 @@ class MpetsApi:
            Resp:
                status (str): статус запроса;
         """
-        return await main.glade_dig(self.cookies, self.timeout, self.connector)
+        resp = await main.glade_dig(self.cookies, self.timeout, self.connector)
+        return Box(resp)
 
     async def travel(self):
         # TODO
@@ -245,8 +271,10 @@ class MpetsApi:
 
     async def items(self, category):
         # TODO
-        return await main.items_effect_vip(cookies=self.cookies,
+        resp = await main.items_effect_vip(cookies=self.cookies,
+                                           timeout=self.timeout,
                                            connector=self.connector)
+        return Box(resp)
 
     async def buy(self, category, item_id):
         # TODO
@@ -268,8 +296,11 @@ class MpetsApi:
            name (str): имя аккаунта;
            account_status (str): информация о бане.
         """
-        return await main.find_pet(name, self.cookies,
-                                   self.timeout, self.connector)
+        resp = await main.find_pet(name=name,
+                                   cookies=self.cookies,
+                                   timeout=self.timeout,
+                                   connector=self.connector)
+        return Box(resp)
 
     async def find_club(self, name: str):
         # TODO
@@ -284,8 +315,11 @@ class MpetsApi:
                name (str): имя клуба;
                account_status (str): информация о бане.
        """
-        return await main.find_club(name, self.cookies, self.timeout,
-                                    self.connector)
+        resp = await main.find_club(name=name,
+                                    cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
+        return Box(resp)
 
     async def show_coin(self):
         # TODO i forget what it is for
@@ -319,9 +353,12 @@ class MpetsApi:
                 status (boolean): статус запроса;
                 threads (array (int)): id топиков;
         """
-        return await forum.threads(forum_id=forum_id, page=page,
-                                   cookies=self.cookies, timeout=self.timeout,
+        resp = await forum.threads(forum_id=forum_id,
+                                   page=page,
+                                   cookies=self.cookies,
+                                   timeout=self.timeout,
                                    connector=self.connector)
+        return Box(resp)
 
     async def thread(self, thread_id: int, page: int = 1):
         """ Получить содержимое топа
@@ -345,9 +382,12 @@ class MpetsApi:
                 moderator_id (int): id модератора, если топик закрыт (default: None)
                 moderator_name (str): ник модератора, если топик закрыт (default: None)
         """
-        return await forum.thread(thread_id=thread_id, page=page,
+        resp = await forum.thread(thread_id=thread_id,
+                                  page=page,
                                   cookies=self.cookies,
+                                  timeout=self.timeout,
                                   connector=self.connector)
+        return Box(resp)
 
     async def add_thread(self, forum_id: int, thread_name: str,
                          thread_text: str, club_only: str = "on"):
@@ -365,15 +405,18 @@ class MpetsApi:
                 thread_name (str): заголовок топа;
                 thread_text (str): описание топа.
         """
-        return await forum.add_thread(forum_id=forum_id,
+        resp = await forum.add_thread(forum_id=forum_id,
                                       thread_name=thread_name,
                                       thread_text=thread_text,
                                       club_only=club_only,
                                       cookies=self.cookies,
+                                      timeout=self.timeout,
                                       connector=self.connector)
+        return Box(resp)
 
-    async def add_vote(self, forum_id, thread_name, thread_text, vote1,
-                       vote2='', vote3='', vote4='', vote5='', club_only='on'):
+    async def add_vote(self, forum_id: int, thread_name: str, thread_text: str,
+                       vote1: str, vote2: str = "", vote3: str = "",
+                       vote4 : str = "", vote5 : str = "", club_only: str = "on"):
         """ Создать опрос
 
             Args:
@@ -388,19 +431,31 @@ class MpetsApi:
                 club_only (str): виден ли топ другим (default: on).
 
             Resp:
-                status (str): статус запроса;
+                status (boolean): статус запроса;
                 thread_id (int): id топа;
                 thread_name (str): заголовок топа;
                 thread_text (str): описание топа.
+                vote1 (str): вариант 1;
+                vote2 (str): вариант 2;
+                vote3 (str): вариант 3;
+                vote4 (str): вариант 4;
+                vote5 (str): вариант 5;
         """
-        return await forum.add_vote(forum_id=forum_id, thread_name=thread_name,
+        resp = await forum.add_vote(forum_id=forum_id,
+                                    thread_name=thread_name,
                                     thread_text=thread_text,
-                                    vote1=vote1, vote2=vote2, vote3=vote3,
-                                    vote4=vote4, vote5=vote5,
-                                    club_only=club_only, cookies=self.cookies,
+                                    vote1=vote1,
+                                    vote2=vote2,
+                                    vote3=vote3,
+                                    vote4=vote4,
+                                    vote5=vote5,
+                                    club_only=club_only,
+                                    cookies=self.cookies,
+                                    timeout=self.timeout,
                                     connector=self.connector)
+        return Box(resp)
 
-    async def thread_message(self, thread_id, message):
+    async def thread_message(self, thread_id: int, message: str):
         """ Отправить сообщение
 
             Args:
@@ -408,25 +463,35 @@ class MpetsApi:
                 message (str): сообщение.
 
             Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса;
+
         """
-        return await forum.thread_message(thread_id=thread_id, message=message,
+        resp = await forum.thread_message(thread_id=thread_id,
+                                          message=message,
                                           cookies=self.cookies,
+                                          timeout=self.timeout,
                                           connector=self.connector)
+        return Box(resp)
 
     async def send_message(self, thread_id, message):
         """ Аналог метода thread_message()
         """
-        return await forum.thread_message(thread_id=thread_id, message=message,
+        resp = await forum.thread_message(thread_id=thread_id,
+                                          message=message,
                                           cookies=self.cookies,
+                                          timeout=self.timeout,
                                           connector=self.connector)
+        return Box(resp)
 
-    async def thread_vote(self, thread_id, vote):
-        return await forum.thread_vote(thread_id=thread_id, vote=vote,
+    async def thread_vote(self, thread_id: int, vote: int):
+        resp = await forum.thread_vote(thread_id=thread_id,
+                                       vote=vote,
                                        cookies=self.cookies,
+                                       timeout=self.timeout,
                                        connector=self.connector)
+        return Box(resp)
 
-    async def message_edit(self, message_id, thread_id, message):
+    async def message_edit(self, message_id: int, thread_id: int, message: str):
         """ Отредактировать сообщение
 
             Args:
@@ -435,30 +500,37 @@ class MpetsApi:
                 message (str): сообщение.
 
             Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
         """
-        return await forum.message_edit(message_id=message_id,
-                                        thread_id=thread_id, message=message,
+        resp = await forum.message_edit(message_id=message_id,
+                                        thread_id=thread_id,
+                                        message=message,
                                         cookies=self.cookies,
+                                        timeout=self.timeout,
                                         connector=self.connector)
+        return Box(resp)
 
-    async def message_delete(self, message_id, thread_id=3):
+    async def message_delete(self, message_id: int, thread_id: int = 1, page: int = 1):
         """ Удалить сообщение
 
             Args:
                 message_id (int): id сообщения;
-                thread_id (int): id топа.
+                thread_id (int): id топа (default: 1);
+                page (int): номер страницы топа (default: 1).
 
             Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
         """
-        return await forum.message_delete(message_id=message_id,
+        resp = await forum.message_delete(message_id=message_id,
                                           thread_id=thread_id,
+                                          page=page,
                                           cookies=self.cookies,
+                                          timeout=self.timeout,
                                           connector=self.connector)
+        return Box(resp)
 
     async def edit_thread(self, thread_name, forum_id, thread_id, thread_text,
-                          club_only='on'):
+                          club_only="on"):
         """ Отредактировать топ
 
             Args:
@@ -469,14 +541,16 @@ class MpetsApi:
                 club_only (str): виден ли топ другим (default: on).
 
             Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
         """
-        return await forum.edit_thread(thread_name=thread_name,
+        resp = await forum.edit_thread(thread_name=thread_name,
                                        forum_id=forum_id, thread_id=thread_id,
                                        thread_text=thread_text,
                                        club_only=club_only,
                                        cookies=self.cookies,
+                                       timeout=self.timeout,
                                        connector=self.connector)
+        return Box(resp)
 
     async def delete_thread(self, thread_id):
         """ Удалить топик
@@ -485,11 +559,13 @@ class MpetsApi:
                 thread_id (int): id топа.
 
             Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
         """
-        return await forum.delete_thread(thread_id=thread_id,
+        resp = await forum.delete_thread(thread_id=thread_id,
                                          cookies=self.cookies,
+                                         timeout=self.timeout,
                                          connector=self.connector)
+        return Box(resp)
 
     async def restore_thread(self, thread_id):
         """ Восстановить топик
@@ -498,11 +574,13 @@ class MpetsApi:
                 thread_id (int): id топа.
 
             Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
         """
-        return await forum.restore_thread(thread_id=thread_id,
+        resp = await forum.restore_thread(thread_id=thread_id,
                                           cookies=self.cookies,
+                                          timeout=self.timeout,
                                           connector=self.connector)
+        return Box(resp)
 
     async def save_thread(self, thread_id):
         """ Защитить от очистки
@@ -511,48 +589,60 @@ class MpetsApi:
                 thread_id (int): id топа.
 
             Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
        """
-        return await forum.save_thread(thread_id=thread_id,
+        resp = await forum.save_thread(thread_id=thread_id,
                                        cookies=self.cookies,
+                                       timeout=self.timeout,
                                        connector=self.connector)
+        return Box(resp)
 
-    async def unsave_thread(self, thread_id):
+    async def unsave_thread(self, thread_id: int):
         """ Снять защиту от очистки
 
             Args:
                 thread_id (int): id топа.
 
            Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
        """
-        return await forum.unsave_thread(thread_id, self.cookies,
-                                         self.connector)
+        resp = await forum.unsave_thread(thread_id=thread_id,
+                                         cookies=self.cookies,
+                                         timeout=self.timeout,
+                                         connector=self.connector)
+        return Box(resp)
 
-    async def close_thread(self, thread_id):
+    async def close_thread(self, thread_id: int):
         """ Закрыть топик
 
            Args:
                thread_id (int): id топа.
 
            Resp:
-               status (str): статус запроса.
+               status (boolean): статус запроса.
        """
-        return await forum.close_thread(thread_id, self.cookies,
-                                        self.connector)
+        resp = await forum.close_thread(thread_id=thread_id,
+                                        cookies=self.cookies,
+                                        timeout=self.timeout,
+                                        connector=self.connector)
+        return Box(resp)
 
-    async def open_thread(self, thread_id):
+    async def open_thread(self, thread_id: int):
         """ Открыть топик
 
            Args:
                 thread_id (int): id топа.
 
            Resp:
-                status (str): статус запроса.
+                status (boolean): статус запроса.
        """
-        return await forum.open_thread(thread_id, self.cookies, self.connector)
+        resp = await forum.open_thread(thread_id=thread_id,
+                                       cookies=self.cookies,
+                                       timeout=self.timeout,
+                                       connector=self.connector)
+        return Box(resp)
 
-    async def attach_thread(self, thread_id):
+    async def attach_thread(self, thread_id: int):
         """ Прикрепить топик
 
            Args:
@@ -561,20 +651,26 @@ class MpetsApi:
            Resp:
                 status (str): статус запроса.
        """
-        return await forum.attach_thread(thread_id, self.cookies,
-                                         self.connector)
+        resp = await forum.attach_thread(thread_id=thread_id,
+                                         cookies=self.cookies,
+                                         timeout=self.timeout,
+                                         connector=self.connector)
+        return Box(resp)
 
-    async def detach_thread(self, thread_id):
+    async def detach_thread(self, thread_id: int):
         """ Открепить топик
 
            Args:
                thread_id (int): id топа.
 
            Resp:
-               status (str): статус запроса.
+               status (boolean): статус запроса.
         """
-        return await forum.detach_thread(thread_id, self.cookies,
-                                         self.connector)
+        resp = await forum.detach_thread(thread_id=thread_id,
+                                         cookies=self.cookies,
+                                         timeout=self.timeout,
+                                         connector=self.connector)
+        return Box(resp)
 
     '''
     club.py
@@ -666,7 +762,10 @@ class MpetsApi:
     '''
 
     async def profile(self):
-        return await profile.profile(self.cookies, self.connector)
+        resp = await profile.profile(cookies=self.cookies,
+                                     timeout=self.timeout,
+                                     connector=self.connector)
+        return Box(resp)
 
     async def view_profile(self, pet_id):
         return await profile.view_profile(pet_id, self.cookies, self.connector)

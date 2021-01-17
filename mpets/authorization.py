@@ -34,7 +34,7 @@ async def start(name, password, type, timeout, connector):
                         return resp
                     return {"status": True,
                             "pet_id": pet_id,
-                            "name": resp['name'],
+                            "name": resp["name"],
                             "password": password,
                             "cookies": cookies}
                 elif "" in await resp.text():

@@ -1,0 +1,4 @@
+aiohttp
+BeautifulSoup4
+lxml
+python-box[all]
