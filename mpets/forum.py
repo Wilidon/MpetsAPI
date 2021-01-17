@@ -1,28 +1,30 @@
 from aiohttp import ClientSession, ClientTimeout
 from bs4 import BeautifulSoup
 
+from mpets.utils.constants import MPETS_URL
 
-async def threads(forum_id, page, cookies, connector):
+
+async def threads(forum_id, page, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            resp = await session.get("http://mpets.mobi/threads", params={'id': forum_id, 'page': page})
+            params = {'id': forum_id, 'page': page}
+            resp = await session.get(f"{MPETS_URL}/threads", params=params)
             await session.close()
             resp = BeautifulSoup(await resp.read(), "lxml")
             links = []
         for link in resp.find_all("a", href=True):
             a = link["href"]
             links.append(str(a))
-        links = [i.split('=')[1] for i in links if 'thread?id' in i]
-        links = [i.rsplit("&")[0] for i in links]
+        links = [i.split("=")[1] for i in links if "thread?id" in i]
+        links = [int(i.rsplit("&")[0]) for i in links]
         if links:
-            return {'status': 'ok', 'threads': links}
+            return {"status": True, "threads": links}
         else:
-            # TODO
-            return {'status': 'error', 'code': 15, 'msg': 'Failed to get threads id'}
+            return {"status": False, "code": 0, "msg": "Топиков нет"}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 15, 'msg': 'Failed to get threads id'}
+        return {"status": False, "code": 0, "msg": e}
 
 
 async def thread(thread_id, page, cookies, connector):
@@ -30,7 +32,8 @@ async def thread(thread_id, page, cookies, connector):
         moderator_id, moderator_name, thread_status, messages = None, None, "Открыт", []
         async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
                                  connector=connector) as session:
-            resp = await session.get("http://mpets.mobi/thread", params={'id': thread_id, 'page': page})
+            params = {"id": thread_id, "page": page}
+            resp = await session.get(f"{MPETS_URL}/thread", params=params)
             await session.close()
             resp_text = await resp.text()
             resp = BeautifulSoup(await resp.read(), "lxml")
@@ -38,10 +41,14 @@ async def thread(thread_id, page, cookies, connector):
                 return await thread(thread_id, page, cookies, connector)
             elif "Сообщений нет" in resp_text:
                 # TODO
-                return {'status': 'error', 'code': 1, 'msg': 'Messages not.'}
+                return {"status": "error",
+                        "code": 0,
+                        "msg": "Сообщений нет"}
             elif "Форум/Топик не найден или был удален" in resp_text:
                 # TODO
-                return {'status': 'error', 'code': 2, 'msg': 'Thread not exist'}
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Форум/Топик не найден или был удален"}
             for a in range(len(resp.find_all("div", {"class": "thread_title"}))):
                 thread_name = resp.find("div", {"class": "ttl lgreen mrg_ttl mt10"})
                 thread_name = thread_name.find("div", {"class": "tc"}).next_element
@@ -53,55 +60,71 @@ async def thread(thread_id, page, cookies, connector):
                 post_date = resp.find_all("div", {"class": "thread_title"})[a]
                 post_date = post_date.find("span", {"class": "post_date nowrap"}).next_element
                 message_id = (15 * (int(page) - 1)) + a + 1
-                message = dict(pet_id=pet_id, name=name, message_id=message_id, message=message, post_date=post_date)
+                message = dict(pet_id=int(pet_id), name=name, message_id=message_id,
+                               message=message, post_date=post_date)
                 messages.append(message)
             if "закрыл(а) топик" in resp_text:
                 thread_status = "Закрыт"
                 moderator_id = resp.find("div", {"class": "msg mrg_msg1 mt5 c_brown3"})
                 moderator_id = moderator_id.find("a", {"class": "pet_name"})["href"].split("=")[1]
+                moderator_id = int(moderator_id)
                 moderator_name = resp.find("div",
                                            {"class": "msg mrg_msg1 mt5 c_brown3"})
                 moderator_name = moderator_name.find("a", {"class": "pet_name"}).text
 
             if "Топик закрыт" in resp_text:
                 thread_status = "Закрыт системой."
-            return {'status': 'ok',
-                    'thread_id': thread_id,
-                    'thread_name': thread_name,
-                    'page': page,
-                    'messages': messages,
-                    'thread_status': thread_status,
-                    'moderator_id': moderator_id,
-                    'moderator_name': moderator_name
-                    }
+            return {"status": True,
+                    "thread_id": thread_id,
+                    "thread_name": thread_name,
+                    "page": page,
+                    "messages": messages,
+                    "thread_status": thread_status,
+                    "moderator_id": moderator_id,
+                    "moderator_name": moderator_name}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'thread_id': thread_id, 'msg': 'Failed to get thread'}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def add_thread(forum_id, thread_name, thread_text, club_only, cookies, connector):
+async def add_thread(forum_id, thread_name, thread_text, club_only,
+                     cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=ClientTimeout(total=10),
+        async with ClientSession(cookies=cookies, timeout=timeout,
                                  connector=connector) as session:
-            data = {'thread_name': thread_name, 'forum_id': forum_id, 'thread_text': thread_text,
-                    'club_only': club_only}
-            resp = await session.post("http://mpets.mobi/create_thread", data=data)
+            data = {"thread_name": thread_name, "forum_id": forum_id,
+                    "thread_text": thread_text, "club_only": club_only}
+            resp = await session.post(f"{MPETS_URL}/create_thread", data=data)
             await session.close()
             if "Вы кликаете слишком быстро." in await resp.text():
-                return await add_thread(forum_id, thread_name, thread_text, club_only, cookies, connector)
+                return await add_thread(forum_id, thread_name, thread_text,
+                                        club_only, cookies, timeout, connector)
             elif "thread?id=" in str(resp.url):
                 thread_id = str(resp.url).split("=")[1].split("&")[0]
-                return {'status': 'ok', 'thread_id': thread_id, 'thread_name': thread_name, 'thread_text': thread_text}
+                return {"status": True,
+                        "thread_id": thread_id,
+                        "thread_name": thread_name,
+                        "thread_text": thread_text}
             elif "Не удалось cоздать топик" in await resp.text():
-                return {'status': 'error', 'code': 19, 'msg': 'Failed to create topic'}
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Не удалось создать топик"}
             elif "Вы не являетесь участником клуба" in await resp.text():
-                return {'status': 'error', 'code': 20,
-                        'msg': 'You are not a member of the club and can not create topics here'}
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Вы не являетесь участником клуба"}
             elif "Вы сможете создавать топики" in await resp.text():
-                return {'status': 'error', 'code': 21, 'msg': 'You can create topics starting at level 18!'}
+                return {"status": False,
+                        "code": 0,
+                        "msg": "Вы можете создавать топики достигнув 18 уровня"}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'thread_id': thread_id, 'msg': 'Failed to get thread'}
+        return {"status": False,
+                "code": 0,
+                "thread_id": thread_id,
+                "msg": e}
 
 
 async def add_vote(forum_id, thread_name, thread_text, vote1, vote2, vote3, vote4, vote5, club_only, cookies,

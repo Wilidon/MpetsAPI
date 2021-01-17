@@ -252,24 +252,25 @@ class MpetsApi:
                 page (int): страница форума.
 
             Resp:
-                status (str): Статус запроса;
-                threads (array): id топиков;
+                status (boolean): статус запроса;
+                threads (array (int)): id топиков;
         """
         return await forum.threads(forum_id=forum_id, page=page,
-                                   cookies=self.cookies, connector=self.connector)
+                                   cookies=self.cookies, timeout=self.timeout,
+                                   connector=self.connector)
 
-    async def thread(self, thread_id, page):
+    async def thread(self, thread_id: int, page: int = 1):
         """ Получить содержимое топа
 
             Args:
                 thread_id (int): id топика;
-                page (int): страница форума.
+                page (int): страница форума (default: 1).
 
             Resp:
-                status (str): Статус запроса;
+                status (boolean): статус запроса;
                 thread_id (int): id топа;
                 thread_name (str): заголовок топа;
-                page (str): страница топа;
+                page (int): страница топа;
                 messages(dict): список сообщений в топе;
                     pet_id (int): id автора сообщения;
                     name (str): ник автора сообщения;
@@ -283,7 +284,8 @@ class MpetsApi:
         return await forum.thread(thread_id=thread_id, page=page,
                                   cookies=self.cookies, connector=self.connector)
 
-    async def add_thread(self, forum_id, thread_name, thread_text, club_only='on'):
+    async def add_thread(self, forum_id: int, thread_name: str,
+                         thread_text: str, club_only: str = "on"):
         """ Создает топик
 
             Args:
@@ -293,7 +295,7 @@ class MpetsApi:
                 club_only (str): виден ли топ другим (default: on).
 
             Resp:
-                status (str): статус запроса;
+                status (boolean): статус запроса;
                 thread_id (int): id топа;
                 thread_name (str): заголовок топа;
                 thread_text (str): описание топа.
