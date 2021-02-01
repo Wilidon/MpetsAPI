@@ -1,3 +1,4 @@
+import asyncio
 import random
 import string
 
@@ -72,6 +73,8 @@ async def login(name, password, timeout, connector):
                             "pet_id": pet_id,
                             "name": name,
                             "cookies": cookies}
+    except asyncio.TimeoutError as e:
+        return await login(name, password, timeout, connector)
     except Exception as e:
         return {"status": "error",
                 "code": 0,

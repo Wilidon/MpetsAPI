@@ -1,5 +1,6 @@
 import asyncio
 from aiohttp import ClientSession, ClientTimeout
+from bs4 import BeautifulSoup
 
 from mpets.utils.constants import MPETS_URL
 
@@ -23,7 +24,8 @@ async def actions(cookies, timeout, connector):
                             break
                 resp = await wakeup(cookies, timeout, connector)
                 if resp["status"] is False:
-                    await session.close(); return resp
+                    await session.close();
+                    return resp
             await session.close()
         return {"status": True}
     except Exception as e:
@@ -186,8 +188,38 @@ async def buy(category, item_id, cookies, connector):
     pass
 
 
-async def best(type, page, cookies, connector):
-    pass
+async def best(type, page, cookies, timeout, connector):
+    try:
+        def has_class(tag):
+            return not tag.has_attr("class")
+
+        async with ClientSession(cookies=cookies, timeout=timeout,
+                                 connector=connector) as session:
+            params = {type: "true", "page": page}
+            pets = []
+            resp = await session.get(f"{MPETS_URL}/best", params=params)
+            await session.close()
+            if "Вы кликаете слишком быстро" in await resp.text():
+                return await best(type, page, cookies, timeout, connector)
+            resp = BeautifulSoup(await resp.read(), "lxml")
+            resp = resp.find("table", {"class": "players tlist font_14 td_un"})
+            resp = resp.find_all(has_class, recursive=False)
+            for pet in resp:
+                place = int(pet.find("td").text)
+                pet_id = pet.find("a", {"class": "c_brown3"})['href']
+                pet_id = int(pet_id.split("id=")[1])
+                name = pet.find("a", {"class": "c_brown3"}).text
+                beauty = int(pet.find_all("td")[2].text)
+                pets.append({"place": place,
+                             "pet_id": pet_id,
+                             "name": name,
+                             "beauty": beauty})
+            return {"status": True,
+                    "pets": pets}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def find_pet(name, cookies, timeout, connector):

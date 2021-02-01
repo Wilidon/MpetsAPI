@@ -63,6 +63,7 @@ class MpetsApi:
                                          password=self.password,
                                          timeout=self.timeout,
                                          connector=self.connector)
+        print(resp)
         if resp["status"]:
             self.cookies = resp["cookies"]
             self.pet_id = resp["pet_id"]
@@ -124,8 +125,8 @@ class MpetsApi:
         """ Дает витаминку за 5 сердец и пропускает минутный сон
         """
         resp = await main.wakeup(cookies=self.cookies,
-                           timeput=self.timeout,
-                           connector=self.connector)
+                                 timeput=self.timeout,
+                                 connector=self.connector)
         return Box(resp)
 
     async def charm(self):
@@ -144,8 +145,8 @@ class MpetsApi:
 
         """
         resp = await main.charm_in_queue(cookies=self.cookies,
-                                timeout=self.timeout,
-                                connector=self.connector)
+                                         timeout=self.timeout,
+                                         connector=self.connector)
         return Box(resp)
 
     async def charm_out_queue(self):
@@ -153,8 +154,8 @@ class MpetsApi:
         """ Покинуть очередь в снежках
         """
         resp = await main.charm_out_queue(cookies=self.cookies,
-                                timeout=self.timeout,
-                                connector=self.connector)
+                                          timeout=self.timeout,
+                                          connector=self.connector)
         return Box(resp)
 
     async def charm_attack(self):
@@ -162,8 +163,8 @@ class MpetsApi:
         """ Бросить снежок
         """
         resp = await main.charm_attack(cookies=self.cookies,
-                                timeout=self.timeout,
-                                connector=self.connector)
+                                       timeout=self.timeout,
+                                       connector=self.connector)
         return Box(resp)
 
     async def charm_change(self):
@@ -280,9 +281,13 @@ class MpetsApi:
         # TODO
         pass
 
-    async def best(self, type, page):
-        # TODO
-        pass
+    async def best(self, type: str = "user", page: int = 1):
+        resp = await main.best(type=type,
+                               page=page,
+                               cookies=self.cookies,
+                               timeout=self.timeout,
+                               connector=self.connector)
+        return Box(resp)
 
     async def find_pet(self, name):
         """ Поиск питомца
@@ -416,7 +421,7 @@ class MpetsApi:
 
     async def add_vote(self, forum_id: int, thread_name: str, thread_text: str,
                        vote1: str, vote2: str = "", vote3: str = "",
-                       vote4 : str = "", vote5 : str = "", club_only: str = "on"):
+                       vote4: str = "", vote5: str = "", club_only: str = "on"):
         """ Создать опрос
 
             Args:
@@ -680,7 +685,9 @@ class MpetsApi:
         """ Получить информацию о клубе
 
            Args:
-                club_id (int): id клуба. без аргумента вернет информацию о своем клубе, либо о приглашении в клуб.
+                club_id (int): id клуба.
+                (без аргумента вернет информацию о
+                своем клубе, либо о приглашении в клуб)
 
            Resp:
                 status (str): статус запроса;
@@ -704,7 +711,12 @@ class MpetsApi:
                     exp (str): опыт игрока;
                     rank (str): ранк игрока.
         """
-        return await club.club(club_id, page, self.cookies, self.connector)
+        resp = await club.club(club_id=club_id,
+                               page=page,
+                               cookies=self.cookies,
+                               timeout=self.timeout,
+                               connector=self.connector)
+        return Box(resp)
 
     async def club_want(self):
         """ Кнопка «Хочу в клуб»
@@ -767,8 +779,12 @@ class MpetsApi:
                                      connector=self.connector)
         return Box(resp)
 
-    async def view_profile(self, pet_id):
-        return await profile.view_profile(pet_id, self.cookies, self.connector)
+    async def view_profile(self, pet_id: int):
+        resp = await profile.view_profile(pet_id=pet_id,
+                                          cookies=self.cookies,
+                                          timeout=self.timeout,
+                                          connector=self.connector)
+        return Box(resp)
 
     async def view_posters(self):
         pass
