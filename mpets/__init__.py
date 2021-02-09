@@ -773,6 +773,14 @@ class MpetsApi:
     async def club_budget(self, club_id):
         return await club.club_budget(club_id, self.cookies, self.connector)
 
+    async def add_club_budget(self, coin, heart):
+        resp = await club.add_club_budget(coin=coin,
+                                          heart=heart,
+                                          cookies=self.cookies,
+                                          timeout=self.timeout,
+                                          connector=self.connector)
+        return Box(resp)
+
     async def club_budget_history(self, club_id, sort=1, page=1):
         return await club.club_budget_history(club_id, sort, page,
                                               self.cookies, self.connector)

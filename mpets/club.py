@@ -244,14 +244,16 @@ async def club_budget(club_id, cookies, connector):
 async def add_club_budget(coin, heart, cookies, timeout, connector):
     try:
         async with ClientSession(cookies=cookies,
-                                 timeout=ClientTimeout(total=timeout),
+                                 timeout=timeout,
                                  connector=connector) as session:
             data = {'coin': coin, 'heart': heart}
-            await session.post("http://mpets.mobi/add_club_budget", data=data)
-            return {"status": "ok"}
+            await session.post(f"{MPETS_URL}/add_club_budget", data=data)
+            return {"status": True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False,
+                'code': 0,
+                'msg': e}
 
 
 async def club_budget_history(club_id, sort, page, cookies, connector):
