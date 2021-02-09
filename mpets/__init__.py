@@ -16,10 +16,8 @@ class MpetsApi:
         self.connector: dict = connector
         fast_mode: bool = fast_mode
         self.beauty: int = None
-        self.beauty: int = None
-        self.beauty: int = None
-        self.beauty: int = None
-        self.beauty: int = None
+        self.coin: int = None
+        self.heart: int = None
 
         if fast_mode is False:
             ...
@@ -63,7 +61,6 @@ class MpetsApi:
                                          password=self.password,
                                          timeout=self.timeout,
                                          connector=self.connector)
-        print(resp)
         if resp["status"]:
             self.cookies = resp["cookies"]
             self.pet_id = resp["pet_id"]
@@ -88,7 +85,7 @@ class MpetsApi:
         Resp:
             status (bool): статус запроса;
         """
-        resp = await main.action(action=action, rand=rand,
+        resp = await main.action(action_type=action, rand=rand,
                                  cookies=self.cookies,
                                  timeout=self.timeout,
                                  connector=self.connector)
@@ -215,16 +212,23 @@ class MpetsApi:
            Resp:
                status (str): статус запроса;
         """
-        resp = await main.glade_dig(self.cookies, self.timeout, self.connector)
+        resp = await main.glade_dig(cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
         return Box(resp)
 
     async def travel(self):
-        # TODO
-        pass
+        resp = await main.travel(cookies=self.cookies,
+                                 timeout=self.timeout,
+                                 connector=self.connector)
+        return Box(resp)
 
     async def go_travel(self, travel_id):
-        # TODO
-        pass
+        resp = await main.go_travel(travel_id=travel_id,
+                                    cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
+        return Box(resp)
 
     async def train(self):
         # TODO
@@ -263,12 +267,17 @@ class MpetsApi:
         pass
 
     async def task(self):
-        # TODO
-        pass
+        resp = await main.task(cookies=self.cookies,
+                               timeout=self.timeout,
+                               connector=self.connector)
+        return Box(resp)
 
     async def task_reward(self, task_id):
-        # TODO
-        pass
+        resp = await main.task_reward(task_id=task_id,
+                                      cookies=self.cookies,
+                                      timeout=self.timeout,
+                                      connector=self.connector)
+        return Box(resp)
 
     async def items(self, category):
         # TODO

@@ -30,7 +30,6 @@ async def threads(forum_id, page, cookies, timeout, connector):
                     "code": 15,
                     "msg": "На форуме нет топиков."}
     except Exception as e:
-        raise
         return {'status': False,
                 'code': 0,
                 'msg': e}

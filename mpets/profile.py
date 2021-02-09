@@ -1,7 +1,7 @@
 import asyncio
 import re
 
-from aiohttp import ClientSession, ClientTimeout
+from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from mpets.utils.constants import MPETS_URL
@@ -27,9 +27,9 @@ async def profile(cookies, timeout, connector):
                 if 'Посл. вход:' in ac.text:
                     try:
                         last_login = ac.find("span", {''}).text
-                    except:
+                    except Exception:
                         last_login = ac.find("span", {'c_red'}).text
-                    last_login = re.sub("^\s+|\n|\r|\s+$", '', last_login)
+                    last_login = re.sub("^\s+|\n|\r|\s+$", '', last_login)  # noqa
                 elif 'VIP-аккаунт' in ac.text:
                     effect = ac.text.split(": ")[1].rsplit('  ', maxsplit=1)[0]
                 elif 'Премиум-аккаунт' in ac.text:
@@ -86,12 +86,12 @@ async def view_profile(pet_id, cookies, timeout, connector):
             resp = await session.get(f"{MPETS_URL}/view_profile", params=params)
             if "Вы кликаете слишком быстро." in await resp.text():
                 return await view_profile(pet_id, cookies,
-                                     timeout, connector)
+                                          timeout, connector)
             resp = BeautifulSoup(await resp.read(), "lxml")
             ava_id = resp.find('img', {'class': 'ava_prof'})['src'].split("avatar")[1].split(".")[0]
             ava_id = int(ava_id)
             name = \
-            resp.find("div", {"class": "stat_item"}).text.split(", ")[0].replace('\n', '').split(" ", maxsplit=1)[1]
+                resp.find("div", {"class": "stat_item"}).text.split(", ")[0].replace('\n', '').split(" ", maxsplit=1)[1]
             level = resp.find("div", {"class": "stat_item"}).text.split(", ")[1].split(" ")[0]
             rank = resp.find("div", {"class": "left font_14 pet_profile_stat"}).find_all("div", {"class": "stat_item"})
             for ac in rank:
@@ -100,7 +100,7 @@ async def view_profile(pet_id, cookies, timeout, connector):
                         last_login = ac.find("span", {''}).text
                     except:
                         last_login = ac.find("span", {'c_red'}).text
-                    last_login = re.sub("^\s+|\n|\r|\s+$", '', last_login)
+                    last_login = re.sub("^\s+|\n|\r|\s+$", '', last_login)  # noqa
                 elif 'VIP-аккаунт' in ac.text:
                     effect = 'VIP'
                 elif 'Премиум-аккаунт' in ac.text:
@@ -141,8 +141,6 @@ async def view_profile(pet_id, cookies, timeout, connector):
                 'code': '',
                 'msg': e}
     except Exception as e:
-        print(pet_id)
-        raise
         return {'status': False,
                 'code': 0,
                 'msg': e}
