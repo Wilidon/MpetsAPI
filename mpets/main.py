@@ -483,8 +483,10 @@ async def items(category, cookies, timeout, connector):
             elif category == "play":
                 pass
 
-    except:
-        pass
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def buy(category, item_id, cookies, timeout, connector):
@@ -504,8 +506,9 @@ async def buy(category, item_id, cookies, timeout, connector):
             elif category == "play":
                 pass
     except Exception as e:
-        # TODO
-        return {"status": "error", "code": 0, "msg": ""}
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def best(type, page, cookies, timeout, connector):

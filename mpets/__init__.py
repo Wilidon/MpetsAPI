@@ -3,6 +3,8 @@ from box import Box
 from mpets import authorization, forum, main, profile, club
 import aiohttp
 
+from mpets.models.authorization import Login, Start
+
 
 class MpetsApi:
     def __init__(self, name: str = None, password: str = None,
@@ -280,15 +282,19 @@ class MpetsApi:
         return Box(resp)
 
     async def items(self, category):
-        # TODO
-        resp = await main.items_effect_vip(cookies=self.cookies,
-                                           timeout=self.timeout,
-                                           connector=self.connector)
+        resp = await main.items(category=category,
+                                cookies=self.cookies,
+                                timeout=self.timeout,
+                                connector=self.connector)
         return Box(resp)
 
-    async def buy(self, category, item_id):
-        # TODO
-        pass
+    async def buy(self, category: str, item_id: id):
+        resp = await main.buy(category=category,
+                              item_id=item_id,
+                              cookies=self.cookies,
+                              timeout=self.timeout,
+                              connector=self.connector)
+        return Box(resp)
 
     async def best(self, type: str = "user", page: int = 1):
         resp = await main.best(type=type,
