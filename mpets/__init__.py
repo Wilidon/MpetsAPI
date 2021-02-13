@@ -797,7 +797,8 @@ class MpetsApi:
     '''
 
     async def profile(self):
-        resp = await profile.profile(cookies=self.cookies,
+        resp = await profile.profile(pet_id=self.pet_id,
+                                     cookies=self.cookies,
                                      timeout=self.timeout,
                                      connector=self.connector)
         return Box(resp)

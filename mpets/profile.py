@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from mpets.utils.constants import MPETS_URL
 
 
-async def profile(cookies, timeout, connector):
+async def profile(pet_id, cookies, timeout, connector):
     try:
         club = rank_club = family_id = family_name = club_const = club_day = effect = None
         last_login = "online"
@@ -55,6 +55,7 @@ async def profile(cookies, timeout, connector):
                 i += 1
             await session.close()
             return {'status': 'ok',
+                    'pet_id': pet_id,
                     'name': name,
                     'level': level,
                     'ava_id': ava_id,
