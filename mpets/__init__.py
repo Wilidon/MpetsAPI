@@ -286,6 +286,7 @@ class MpetsApi:
                                 cookies=self.cookies,
                                 timeout=self.timeout,
                                 connector=self.connector)
+        print(resp)
         return Box(resp)
 
     async def buy(self, category: str, item_id: id):
