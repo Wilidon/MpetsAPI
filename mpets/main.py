@@ -453,7 +453,6 @@ async def items(category, cookies, timeout, connector):
                     return await items(category, cookies, timeout, connector)
                 resp = BeautifulSoup(await resp.read(), "lxml")
                 effects = resp.find_all("div", {"class": "shop_item"})
-                print(effects)
                 if len(effects) == 1:
                     if "VIP-аккаунт" in effects[0].text:
                         if "Осталось" in effects[0].text:
