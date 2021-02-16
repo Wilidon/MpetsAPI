@@ -557,11 +557,11 @@ async def find_pet(name, cookies, timeout, connector):
             if "Вы кликаете слишком быстро" in await resp.text():
                 return await find_pet(name, cookies, timeout, connector)
             elif "Имя должно быть от 3 до 12 символов!" in await resp.text():
-                return {"status": True,
+                return {"status": False,
                         "code": 0,
                         "msg": "Имя должно быть от 3 до 13 символов"}
             elif "Питомец не найден!" in await resp.text():
-                return {"status": True,
+                return {"status": False,
                         "code": 0,
                         "msg": "Питомец не найден!"}
             elif "Игрок заблокирован" in await resp.text():
