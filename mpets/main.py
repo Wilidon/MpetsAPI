@@ -12,6 +12,8 @@ async def actions(cookies, timeout, connector):
             for a in range(3):
                 for b in range(5):
                     await session.get(f"{MPETS_URL}/?action=food&rand=1")
+                    if "Разбудить за" in await resp.text() or "Играть еще" in await resp.text():
+                        break
                     await asyncio.sleep(0.4)
                     await session.get(f"{MPETS_URL}/?action=play&rand=1")
                     while True:
