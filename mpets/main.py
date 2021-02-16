@@ -395,12 +395,13 @@ async def task(cookies, timeout, connector):
         async with ClientSession(cookies=cookies,
                                  timeout=timeout,
                                  connector=connector) as session:
-            tasks_list, task_id = [], 0
+            tasks_list = []
             resp = await session.get(f"{MPETS_URL}/task")
             await session.close()
             resp = BeautifulSoup(await resp.read(), "lxml")
             tasks = resp.find_all("div", {"class": "wr_c3 m-3"})
             for task in tasks:
+                task_id = 0
                 status = False
                 if "Забрать награду" in task.text:
                     status = True
