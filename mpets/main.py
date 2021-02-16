@@ -20,12 +20,14 @@ async def actions(cookies, timeout, connector):
                         if "Соревноваться" in await resp.text():
                             await session.get(f"{MPETS_URL}/show")
                             await asyncio.sleep(0.4)
+                        elif "Вы кликаете слишком быстро." in await resp.text():
+                            await session.get(f"{MPETS_URL}/show")
+                            await asyncio.sleep(0.4)
                         else:
                             break
                 resp = await wakeup(cookies, timeout, connector)
                 if resp["status"] is False:
-                    await session.close()
-                    return resp
+                    await wakeup(cookies, timeout, connector)
             await session.close()
         return {"status": True}
     except Exception as e:
