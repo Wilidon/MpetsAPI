@@ -45,7 +45,8 @@ async def profile(pet_id, cookies, timeout, connector):
                 elif 'Верность клубу' in ac.text:
                     club_const = int(ac.text.split(": ")[1].split("%")[0])
                 elif 'Дней в клубе:' in ac.text:
-                    club_day = int(ac.text.split(": ")[1].replace('\t', ''))
+                    club_day = ac.text.split(": ")[1]
+                    club_day = int(club_day.split(" ")[0].replace('\t', ''))
                 elif 'Дней в игре:' in ac.text:
                     day = int(ac.text.split(": ")[1].replace('\t', ''))
                 elif 'Монеты:' in ac.text:
@@ -118,7 +119,8 @@ async def view_profile(pet_id, cookies, timeout, connector):
                 elif 'Верность клубу' in ac.text:
                     club_const = int(ac.text.split(": ")[1].split("%")[0])
                 elif 'Дней в клубе:' in ac.text:
-                    club_day = int(ac.text.split(": ")[1].replace('\t', ''))
+                    club_day = ac.text.split(": ")[1]
+                    club_day = int(club_day.split(" ")[0].replace('\t', ''))
                 elif 'Дней в игре:' in ac.text:
                     day = int(ac.text.split(": ")[1].replace('\t', ''))
             return {'status': True,
