@@ -345,15 +345,15 @@ async def travel(cookies, timeout, connector):
 async def go_travel(travel_id, cookies, timeout, connector):
     try:
         async with ClientSession(cookies=cookies,
-                                 timeout=ClientTimeout(total=timeout),
+                                 timeout=timeout,
                                  connector=connector) as session:
             params = {"id": travel_id}
-            await session.get("http://mpets.mobi/go_travel",
+            await session.get(f"{MPETS_URL}/go_travel",
                               params=params)
             await session.close()
             return {"status": True}
     except Exception as e:
-        return {"status": False, "code": 0, "msg": ""}
+        return {"status": False, "code": 0, "msg": e}
 
 
 async def train(cookies, connector):
