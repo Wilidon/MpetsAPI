@@ -571,7 +571,7 @@ async def find_pet(name, cookies, timeout, connector):
                 account_status = "block"
             elif "Игрок забанен" in await resp.text():
                 account_status = "ban"
-            elif "view_profile" in str(resp.url):
+            if "view_profile" in str(resp.url):
                 pet_id = str(resp.url).split("id=")[1].split("&")[0]
             return {"status": True,
                     "pet_id": pet_id,

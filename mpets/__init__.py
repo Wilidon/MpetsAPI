@@ -1,7 +1,9 @@
+from aiohttp import ClientSession
 from box import Box
-
-from mpets import authorization, forum, main, profile, club
 import aiohttp
+from aiohttp_socks import ProxyType, ProxyConnector, ChainProxyConnector
+from mpets import authorization, forum, main, profile, club
+
 
 from mpets.models.authorization import Login, Start
 
@@ -816,3 +818,19 @@ class MpetsApi:
     async def post_message(self, pet_id, message, gift_id=None):
         return await profile.post_message(pet_id, message, self.cookies,
                                           self.connector)
+
+
+    async def test_proxy(self,):
+        proxies = {
+            'http': 'socks5://127.0.0.1:9050',
+            'https': 'socks5://127.0.0.1:9050'
+        }
+        proxies = {
+            'http': 'socks5://176.9.119.170:1080',
+            'https': 'socks5://176.9.119.170:1080'
+        }
+        connector = ProxyConnector.from_url('socks5://127.0.0.1:9050')
+        async with ClientSession(connector=connector) as session:
+            print(session)
+            r = await session.get("https://api.ipify.org")
+            print(await r.text())
