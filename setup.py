@@ -10,6 +10,7 @@ setup(name='mpets',
           'aiohttp',
           'BeautifulSoup4',
           'lxml',
-          'aiohttp-socks'
+          'aiohttp-socks',
+          'pydantic'
       ],
       zip_safe=False)

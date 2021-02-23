@@ -1,10 +1,9 @@
-from aiohttp import ClientSession
-from box import Box
 import aiohttp
-from aiohttp_socks import ProxyType, ProxyConnector, ChainProxyConnector
+from aiohttp import ClientSession
+from aiohttp_socks import ProxyConnector
+from box import Box
+
 from mpets import authorization, forum, main, profile, club
-
-
 from mpets.models.authorization import Login, Start
 
 

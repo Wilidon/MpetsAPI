@@ -3,3 +3,4 @@ BeautifulSoup4
 lxml
 python-box[all]
 aiohttp-socks
+pydantic
