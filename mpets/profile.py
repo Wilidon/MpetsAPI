@@ -54,7 +54,7 @@ async def profile(pet_id, cookies, timeout, connector, count = 1):
                 elif 'Сердечки:' in ac.text:
                     hearts = int(ac.text.split(": ")[1].replace('\t', ''))
                 i += 1
-            await session.close()
+            #await session.close()
             return {'status': 'ok',
                     'pet_id': pet_id,
                     'name': name,
