@@ -30,7 +30,7 @@ async def club(club_id, page, cookies, timeout, connector):
                     club_name = club_name.rsplit("  ", maxsplit=1)[0].split("Клуб ")[1]
                 else:
                     club_name = \
-                    club_name.rsplit("  ", maxsplit=1)[0]
+                        club_name.rsplit("  ", maxsplit=1)[0]
                 inf = club_inf.find("div", {"class": "wr_c4 left"})
                 inf = inf.find_all("span", {"class": "green_dark"})
                 if len(inf) == 4:
@@ -231,7 +231,9 @@ async def club_budget(club_id, cookies, connector):
                 resp = BeautifulSoup(await resp.read(), "lxml")
                 coins = resp.find("div", {"class": "cntr"}).find_all("img", {"class": "price_img"})[1].next_element
                 hearts = resp.find("div", {"class": "cntr"}).find_all("img", {"class": "price_img"})[2].next_element
-                max_coins = resp.find("div", {"class": "p3 left"}).find_all("img", {"class": "price_img"})[0].next_element.split(": ")[1]
+                max_coins = \
+                resp.find("div", {"class": "p3 left"}).find_all("img", {"class": "price_img"})[0].next_element.split(
+                    ": ")[1]
             return {'status': 'ok',
                     'coins': coins,
                     'hearts': hearts,
@@ -243,12 +245,12 @@ async def club_budget(club_id, cookies, connector):
 
 async def add_club_budget(coin, heart, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies,
-                                 timeout=timeout,
-                                 connector=connector) as session:
-            data = {'coin': coin, 'heart': heart}
-            await session.post(f"{MPETS_URL}/add_club_budget", data=data)
-            return {"status": True}
+        session = ClientSession(cookies=cookies,
+                                timeout=timeout,
+                                connector=connector)
+        data = {'coin': coin, 'heart': heart}
+        await session.post(f"{MPETS_URL}/add_club_budget", data=data)
+        return {"status": True}
     except Exception as e:
         # TODO
         return {'status': False,

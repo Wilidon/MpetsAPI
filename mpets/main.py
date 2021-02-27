@@ -7,30 +7,30 @@ from mpets.utils.constants import MPETS_URL
 
 async def actions(cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=timeout,
-                                 connector=connector) as session:
-            for a in range(3):
-                for b in range(5):
-                    resp = await session.get(f"{MPETS_URL}/?action=food&rand=1")
-                    if "Разбудить за" in await resp.text() or "Играть ещё" in await resp.text():
-                        return {"status": True, "play": False}
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        for a in range(3):
+            for b in range(5):
+                resp = await session.get(f"{MPETS_URL}/?action=food&rand=1")
+                if "Разбудить за" in await resp.text() or "Играть ещё" in await resp.text():
+                    return {"status": True, "play": False}
+                await asyncio.sleep(0.4)
+                await session.get(f"{MPETS_URL}/?action=play&rand=1")
+                while True:
+                    resp = await session.get(f"{MPETS_URL}/show")
                     await asyncio.sleep(0.4)
-                    await session.get(f"{MPETS_URL}/?action=play&rand=1")
-                    while True:
-                        resp = await session.get(f"{MPETS_URL}/show")
+                    if "Соревноваться" in await resp.text():
+                        await session.get(f"{MPETS_URL}/show")
                         await asyncio.sleep(0.4)
-                        if "Соревноваться" in await resp.text():
-                            await session.get(f"{MPETS_URL}/show")
-                            await asyncio.sleep(0.4)
-                        elif "Вы кликаете слишком быстро." in await resp.text():
-                            await session.get(f"{MPETS_URL}/show")
-                            await asyncio.sleep(0.4)
-                        else:
-                            break
-                resp = await wakeup(cookies, timeout, connector)
-                if resp["status"] is False:
-                    await wakeup(cookies, timeout, connector)
-            await session.close()
+                    elif "Вы кликаете слишком быстро." in await resp.text():
+                        await session.get(f"{MPETS_URL}/show")
+                        await asyncio.sleep(0.4)
+                    else:
+                        break
+            resp = await wakeup(cookies, timeout, connector)
+            if resp["status"] is False:
+                await wakeup(cookies, timeout, connector)
+        await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False,
@@ -56,11 +56,11 @@ async def wakeup_sleep(cookies, timeout, connector):
 
 async def wakeup(cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=timeout,
-                                 connector=connector) as session:
-            await session.get(f"{MPETS_URL}/wakeup")
-            await session.close()
-            return {"status": True}
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        await session.get(f"{MPETS_URL}/wakeup")
+        await session.close()
+        return {"status": True}
     except Exception as e:
         return {"status": False,
                 "code": 0,
@@ -295,11 +295,11 @@ async def glade(cookies, connector):
 
 async def glade_dig(cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies, timeout=timeout,
-                                 connector=connector) as session:
-            await session.get(f"{MPETS_URL}/glade_dig")
-            await session.close()
-            return {"status": True}
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        await session.get(f"{MPETS_URL}/glade_dig")
+        await session.close()
+        return {"status": True}
     except Exception as e:
         return {"status": False,
                 "code": 0,
@@ -308,50 +308,50 @@ async def glade_dig(cookies, timeout, connector):
 
 async def travel(cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies,
-                                 timeout=timeout,
-                                 connector=connector) as session:
-            left_time, travel_status, ids, records = 0, False, [], []
-            resp = await session.get(f"{MPETS_URL}/travel")
-            await session.close()
-            response = BeautifulSoup(await resp.read(), "lxml")
-            if "Вы кликаете слишком быстро" in await resp.text():
-                return await travel(cookies, timeout, connector)
-            if "Ваш питомец гуляет" in await resp.text():
-                travel_status = True
-                left_time = response.find("span", {"class": "green_dark"}).text.split("осталось ")[1]
-            elif "Прогулка завершена!" in await resp.text():
-                return await travel(cookies, timeout, connector)
-            elif "Рекорд за сутки" in await resp.text():
-                travel_ids = response.find("div", {"class": "travel"})
-                for link in travel_ids.find_all("a", href=True):
-                    ids.append(int(link["href"].split("=")[1]))
-                records_list = response.find("table", {"class": "travel_records"})
-                nick = records_list.find_all("td", {"class": "cntr td_un"})
-                coins = records_list.find_all("td", {"class": "td_r"})
-                for i in range(3):
-                    records.append({"pet_id": int(nick[i].find("a")["href"].split("=")[1]),
-                                    "name": nick[i].text,
-                                    "coins": int(coins[i].text)})
-            return {"status": True,
-                    "travel": travel_status,
-                    "left_time": left_time,
-                    "ids": ids,
-                    "records": records}
+        session = ClientSession(cookies=cookies,
+                                timeout=timeout,
+                                connector=connector)
+        left_time, travel_status, ids, records = 0, False, [], []
+        resp = await session.get(f"{MPETS_URL}/travel")
+        await session.close()
+        response = BeautifulSoup(await resp.read(), "lxml")
+        if "Вы кликаете слишком быстро" in await resp.text():
+            return await travel(cookies, timeout, connector)
+        if "Ваш питомец гуляет" in await resp.text():
+            travel_status = True
+            left_time = response.find("span", {"class": "green_dark"}).text.split("осталось ")[1]
+        elif "Прогулка завершена!" in await resp.text():
+            return await travel(cookies, timeout, connector)
+        elif "Рекорд за сутки" in await resp.text():
+            travel_ids = response.find("div", {"class": "travel"})
+            for link in travel_ids.find_all("a", href=True):
+                ids.append(int(link["href"].split("=")[1]))
+            records_list = response.find("table", {"class": "travel_records"})
+            nick = records_list.find_all("td", {"class": "cntr td_un"})
+            coins = records_list.find_all("td", {"class": "td_r"})
+            for i in range(3):
+                records.append({"pet_id": int(nick[i].find("a")["href"].split("=")[1]),
+                                "name": nick[i].text,
+                                "coins": int(coins[i].text)})
+        return {"status": True,
+                "travel": travel_status,
+                "left_time": left_time,
+                "ids": ids,
+                "records": records}
     except Exception as e:
         return {"status": False, "code": 0, "msg": e}
 
 
 async def go_travel(travel_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies,
+        session = ClientSession(cookies=cookies,
                                  timeout=timeout,
-                                 connector=connector) as session:
-            params = {"id": travel_id}
-            await session.get(f"{MPETS_URL}/go_travel",
-                              params=params)
-            await session.close()
-            return {"status": True}
+                                 connector=connector)
+        params = {"id": travel_id}
+        await session.get(f"{MPETS_URL}/go_travel",
+                          params=params)
+        await session.close()
+        return {"status": True}
     except Exception as e:
         return {"status": False, "code": 0, "msg": e}
 
@@ -394,34 +394,34 @@ async def garden_collect(garden_id, cookies, connector):
 
 async def task(cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies,
+        session = ClientSession(cookies=cookies,
                                  timeout=timeout,
-                                 connector=connector) as session:
-            tasks_list = []
-            resp = await session.get(f"{MPETS_URL}/task")
-            await session.close()
-            resp = BeautifulSoup(await resp.read(), "lxml")
-            tasks = resp.find_all("div", {"class": "wr_c3 m-3"})
-            for task in tasks:
-                task_id = 0
-                status = False
-                if "Забрать награду" in task.text:
-                    status = True
-                    task_id = task.find("div", {"class": "span3"})
-                    task_id = int(task_id.find("a")["href"].split("=")[1])
-                name = task.find("div", {"class": "tc"}).text
-                desc = task.find("div", {"class": "mt7 font_13"}).text
-                progress = task.find("span", {"class": "c_gray"}).text.split(": ")[1].split(" из ")
-                progress = [int(i) for i in progress]
-                reward = None
-                tasks_list.append({"status": status,
-                                   "name": name,
-                                   "description": desc,
-                                   "progress": progress,
-                                   "reward": reward,
-                                   "id": task_id})
-            return {"status": True,
-                    "tasks": tasks_list}
+                                 connector=connector)
+        tasks_list = []
+        resp = await session.get(f"{MPETS_URL}/task")
+        await session.close()
+        resp = BeautifulSoup(await resp.read(), "lxml")
+        tasks = resp.find_all("div", {"class": "wr_c3 m-3"})
+        for task in tasks:
+            task_id = 0
+            status = False
+            if "Забрать награду" in task.text:
+                status = True
+                task_id = task.find("div", {"class": "span3"})
+                task_id = int(task_id.find("a")["href"].split("=")[1])
+            name = task.find("div", {"class": "tc"}).text
+            desc = task.find("div", {"class": "mt7 font_13"}).text
+            progress = task.find("span", {"class": "c_gray"}).text.split(": ")[1].split(" из ")
+            progress = [int(i) for i in progress]
+            reward = None
+            tasks_list.append({"status": status,
+                               "name": name,
+                               "description": desc,
+                               "progress": progress,
+                               "reward": reward,
+                               "id": task_id})
+        return {"status": True,
+                "tasks": tasks_list}
     except Exception as e:
         return {"status": False,
                 "code": 0,
@@ -430,13 +430,13 @@ async def task(cookies, timeout, connector):
 
 async def task_reward(task_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies,
+        session = ClientSession(cookies=cookies,
                                  timeout=timeout,
-                                 connector=connector) as session:
-            params = {"id": task_id}
-            await session.get(f"{MPETS_URL}/task_reward", params=params)
-            await session.close()
-            return {"status": True}
+                                 connector=connector)
+        params = {"id": task_id}
+        await session.get(f"{MPETS_URL}/task_reward", params=params)
+        #await session.close()
+        return {"status": True}
     except Exception as e:
         return {"status": False,
                 "code": 0,
@@ -445,48 +445,48 @@ async def task_reward(task_id, cookies, timeout, connector):
 
 async def items(category, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies,
+        session = ClientSession(cookies=cookies,
                                  timeout=timeout,
-                                 connector=connector) as session:
-            params = {"category": category}
-            if category == "home":
-                pass
-            elif category == "effect":
-                resp = await session.get("http://mpets.mobi/items",
-                                         params=params)
-                if "Вы кликаете слишком быстро." in await resp.text():
-                    return await items(category, cookies, timeout, connector)
-                resp = BeautifulSoup(await resp.read(), "lxml")
-                effects = resp.find_all("div", {"class": "shop_item"})
-                if len(effects) == 1:
-                    if "VIP-аккаунт" in effects[0].text:
-                        if "Осталось" in effects[0].text:
-                            left_time = \
-                                effects[0].find("div", {"class": "succes "
-                                                                 "mt3"}).text.split(
-                                    "Осталось: ")[1]
+                                 connector=connector)
+        params = {"category": category}
+        if category == "home":
+            pass
+        elif category == "effect":
+            resp = await session.get("http://mpets.mobi/items",
+                                     params=params)
+            if "Вы кликаете слишком быстро." in await resp.text():
+                return await items(category, cookies, timeout, connector)
+            resp = BeautifulSoup(await resp.read(), "lxml")
+            effects = resp.find_all("div", {"class": "shop_item"})
+            if len(effects) == 1:
+                if "VIP-аккаунт" in effects[0].text:
+                    if "Осталось" in effects[0].text:
+                        left_time = \
+                            effects[0].find("div", {"class": "succes "
+                                                             "mt3"}).text.split(
+                                "Осталось: ")[1]
+                        return {"status": True,
+                                "effect": "VIP",
+                                "left_time": left_time}
+                    return {"status": True,
+                            "effect": "None"}
+            elif len(effects) == 2:
+                for effect in effects:
+                    if "Премиум-аккаунт" in effect.text:
+                        if "Осталось" in effect.text:
+                            left_time = effect.find("div", {
+                                "class": "succes mt3"}).text.split(
+                                "Осталось: ")[1]
                             return {"status": True,
-                                    "effect": "VIP",
+                                    "effect": "premium",
                                     "left_time": left_time}
+                    if "VIP-аккаунт" in effect.text:
                         return {"status": True,
                                 "effect": "None"}
-                elif len(effects) == 2:
-                    for effect in effects:
-                        if "Премиум-аккаунт" in effect.text:
-                            if "Осталось" in effect.text:
-                                left_time = effect.find("div", {
-                                    "class": "succes mt3"}).text.split(
-                                    "Осталось: ")[1]
-                                return {"status": True,
-                                        "effect": "premium",
-                                        "left_time": left_time}
-                        if "VIP-аккаунт" in effect.text:
-                            return {"status": True,
-                                    "effect": "None"}
-            elif category == "food":
-                pass
-            elif category == "play":
-                pass
+        elif category == "food":
+            pass
+        elif category == "play":
+            pass
 
     except Exception as e:
         return {"status": False,
@@ -496,20 +496,20 @@ async def items(category, cookies, timeout, connector):
 
 async def buy(category, item_id, cookies, timeout, connector):
     try:
-        async with ClientSession(cookies=cookies,
+        session = ClientSession(cookies=cookies,
                                  timeout=timeout,
-                                 connector=connector) as session:
-            params = {"category": category, "id": item_id}
-            if category == "home":
-                pass
-            elif category == "effect":
-                resp = await session.get("http://mpets.mobi/buy",
-                                         params=params)
-                return {"status": True}
-            elif category == "food":
-                pass
-            elif category == "play":
-                pass
+                                 connector=connector)
+        params = {"category": category, "id": item_id}
+        if category == "home":
+            pass
+        elif category == "effect":
+            resp = await session.get("http://mpets.mobi/buy",
+                                     params=params)
+            return {"status": True}
+        elif category == "food":
+            pass
+        elif category == "play":
+            pass
     except Exception as e:
         return {"status": False,
                 "code": 0,
