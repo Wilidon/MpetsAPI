@@ -74,11 +74,10 @@ async def profile(pet_id, cookies, timeout, connector, count = 1):
                     'day': day}
     except asyncio.TimeoutError as e:
         if count >= 3:
-            return {'status': 'error', 'code': 1, 'msg': e}
+            return {'status': False, 'code': 1, 'msg': e}
         await profile(pet_id, cookies, timeout, connector, count+1)
-
     except Exception as e:
-        return {'status': 'error', 'code': '', 'msg': e}
+        return {'status': False, 'code': '', 'msg': e}
 
 
 async def view_profile(pet_id, cookies, timeout, connector):
@@ -144,7 +143,7 @@ async def view_profile(pet_id, cookies, timeout, connector):
                     'day': day}
     except asyncio.TimeoutError as e:
         return {'status': False,
-                'code': '',
+                'code': 1,
                 'msg': e}
     except Exception as e:
         return {'status': False,

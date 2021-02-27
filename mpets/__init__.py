@@ -860,7 +860,8 @@ class MpetsApi:
             'https': 'socks5://176.9.119.170:1080'
         }
         connector = ProxyConnector.from_url('socks5://127.0.0.1:9050')
+        #connector = None
         async with ClientSession(connector=connector) as session:
-            print(session)
             r = await session.get("https://api.ipify.org")
-            print(await r.text())
+            r = await r.text()
+            return r
