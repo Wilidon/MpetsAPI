@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from mpets.utils.constants import MPETS_URL
 
 
-async def profile(pet_id, cookies, timeout, connector):
+async def profile(pet_id, cookies, timeout, connector, count = 1):
     try:
         club = rank_club = family_id = family_name = club_const = club_day = effect = None
         last_login = "online"
@@ -73,7 +73,10 @@ async def profile(pet_id, cookies, timeout, connector):
                     'club_day': club_day,
                     'day': day}
     except asyncio.TimeoutError as e:
-        return {'status': 'error', 'code': '', 'msg': e}
+        if count >= 3:
+            return {'status': 'error', 'code': 1, 'msg': e}
+        await profile(pet_id, cookies, timeout, connector, count+1)
+
     except Exception as e:
         return {'status': 'error', 'code': '', 'msg': e}
 

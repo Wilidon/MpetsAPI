@@ -318,6 +318,25 @@ async def edit_thread(thread_name, forum_id, thread_id,
                 "msg": e}
 
 
+async def edit_vote(forum_id, thread_id, thread_name, thread_text,
+                    vote1, vote2, vote3, vote4, vote5,
+                    club_only, cookies, timeout, connector):
+    try:
+        async with ClientSession(cookies=cookies, timeout=timeout,
+                                 connector=connector) as session:
+            data = {"thread_name": thread_name, "forum_id": forum_id, "thread_id": thread_id,
+                    "first_message_id": 1, "thread_text": thread_text, "club_only": club_only,
+                    "vote1": vote1, "vote2": vote2, "vote3": vote3,
+                    "vote4": vote4, "vote5": vote5, "vote": ""}
+            r = await session.post(f"{MPETS_URL}/update_thread", data=data)
+            await session.close()
+            return {"status": True}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
+
+
 async def restore_thread(thread_id, cookies, timeout, connector):
     try:
         async with ClientSession(cookies=cookies, timeout=timeout,

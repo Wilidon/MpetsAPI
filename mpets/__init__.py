@@ -550,12 +550,12 @@ class MpetsApi:
                                           connector=self.connector)
         return Box(resp)
 
-    async def edit_thread(self, thread_name, forum_id, thread_id, thread_text,
+    async def edit_thread(self, thread_name: str, forum_id, thread_id, thread_text,
                           club_only="on"):
         """ Отредактировать топ
 
             Args:
-                thread_name (int): заголовок топа;
+                thread_name (str): заголовок топа;
                 forum_id (int): id форума;
                 thread_id (int): id топа;
                 thread_text (str): описание топа;
@@ -571,6 +571,38 @@ class MpetsApi:
                                        cookies=self.cookies,
                                        timeout=self.timeout,
                                        connector=self.connector)
+        return Box(resp)
+
+    async def edit_vote(self, forum_id: int, thread_id: int, thread_name: str, thread_text: str,
+                        vote1: str, vote2: str = "", vote3: str = "",
+                        vote4: str = "", vote5: str = "", club_only: str = "on"):
+        """
+
+        :param forum_id:
+        :param thread_id:
+        :param thread_name:
+        :param thread_text:
+        :param vote1:
+        :param vote2:
+        :param vote3:
+        :param vote4:
+        :param vote5:
+        :param club_only:
+        :return:
+        """
+        resp = await forum.edit_vote(forum_id=forum_id,
+                                     thread_id=thread_id,
+                                     thread_name=thread_name,
+                                     thread_text=thread_text,
+                                     vote1=vote1,
+                                     vote2=vote2,
+                                     vote3=vote3,
+                                     vote4=vote4,
+                                     vote5=vote5,
+                                     club_only=club_only,
+                                     cookies=self.cookies,
+                                     timeout=self.timeout,
+                                     connector=self.connector)
         return Box(resp)
 
     async def delete_thread(self, thread_id):
@@ -818,8 +850,7 @@ class MpetsApi:
         return await profile.post_message(pet_id, message, self.cookies,
                                           self.connector)
 
-
-    async def test_proxy(self,):
+    async def test_proxy(self, ):
         proxies = {
             'http': 'socks5://127.0.0.1:9050',
             'https': 'socks5://127.0.0.1:9050'
