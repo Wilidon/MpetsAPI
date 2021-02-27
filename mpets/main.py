@@ -30,7 +30,7 @@ async def actions(cookies, timeout, connector):
             resp = await wakeup(cookies, timeout, connector)
             if resp["status"] is False:
                 await wakeup(cookies, timeout, connector)
-        await session.close()
+        #await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False,
@@ -59,7 +59,7 @@ async def wakeup(cookies, timeout, connector):
         session = ClientSession(cookies=cookies, timeout=timeout,
                                 connector=connector)
         await session.get(f"{MPETS_URL}/wakeup")
-        await session.close()
+        #await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False,
@@ -298,7 +298,7 @@ async def glade_dig(cookies, timeout, connector):
         session = ClientSession(cookies=cookies, timeout=timeout,
                                 connector=connector)
         await session.get(f"{MPETS_URL}/glade_dig")
-        await session.close()
+        #await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False,
@@ -313,7 +313,7 @@ async def travel(cookies, timeout, connector):
                                 connector=connector)
         left_time, travel_status, ids, records = 0, False, [], []
         resp = await session.get(f"{MPETS_URL}/travel")
-        await session.close()
+        #await session.close()
         response = BeautifulSoup(await resp.read(), "lxml")
         if "Вы кликаете слишком быстро" in await resp.text():
             return await travel(cookies, timeout, connector)
@@ -350,7 +350,7 @@ async def go_travel(travel_id, cookies, timeout, connector):
         params = {"id": travel_id}
         await session.get(f"{MPETS_URL}/go_travel",
                           params=params)
-        await session.close()
+        #await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False, "code": 0, "msg": e}
@@ -399,7 +399,7 @@ async def task(cookies, timeout, connector):
                                  connector=connector)
         tasks_list = []
         resp = await session.get(f"{MPETS_URL}/task")
-        await session.close()
+        #await session.close()
         resp = BeautifulSoup(await resp.read(), "lxml")
         tasks = resp.find_all("div", {"class": "wr_c3 m-3"})
         for task in tasks:
