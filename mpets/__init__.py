@@ -129,6 +129,14 @@ class MpetsApi:
                                  connector=self.connector)
         return Box(resp)
 
+    async def check_ban(self):
+        """ Проверяет наличие бана на аккаунте
+                """
+        resp = await main.check_ban(cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
+        return Box(resp)
+
     async def charm(self):
         # TODO
         """ Возвращает данные снежков
