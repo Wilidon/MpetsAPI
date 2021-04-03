@@ -342,7 +342,7 @@ async def travel(cookies, timeout, connector):
                                 connector=connector)
         left_time, travel_status, ids, records = 0, False, [], []
         resp = await session.get(f"{MPETS_URL}/travel")
-        #await session.close()
+        await session.close()
         response = BeautifulSoup(await resp.read(), "lxml")
         if "Вы кликаете слишком быстро" in await resp.text():
             return await travel(cookies, timeout, connector)
@@ -379,7 +379,7 @@ async def go_travel(travel_id, cookies, timeout, connector):
         params = {"id": travel_id}
         await session.get(f"{MPETS_URL}/go_travel",
                           params=params)
-        #await session.close()
+        await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False, "code": 0, "msg": e}
