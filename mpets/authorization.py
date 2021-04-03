@@ -16,6 +16,7 @@ async def start(name, password, type, timeout, connector):
             session = ClientSession(timeout=timeout, connector=connector)
             await session.get(f"{MPETS_URL}/start")
             resp = await session.get(f"{MPETS_URL}/save_gender?type={type}")
+            await session.close()
             if "Магазин" in await resp.text():
                 cookies = session.cookie_jar.filter_cookies(MPETS_URL)
                 for key, cookie in cookies.items():
@@ -50,10 +51,11 @@ async def start(name, password, type, timeout, connector):
 
 async def login(name, password, timeout, connector):
     try:
-        session =  ClientSession(timeout=timeout, connector=connector)
+        session = ClientSession(timeout=timeout, connector=connector)
         data = {"name": name, "password": password}
         async with session.post(f"{MPETS_URL}/login",
                                 data=data) as resp:
+            await session.close()
             if "Неправильное Имя или Пароль" in await resp.text():
                 return {"status": False,
                         "code": 6,

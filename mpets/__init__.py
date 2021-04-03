@@ -125,7 +125,7 @@ class MpetsApi:
         """ Дает витаминку за 5 сердец и пропускает минутный сон
         """
         resp = await main.wakeup(cookies=self.cookies,
-                                 timeput=self.timeout,
+                                 timeout=self.timeout,
                                  connector=self.connector)
         return Box(resp)
 
@@ -433,7 +433,10 @@ class MpetsApi:
                                       cookies=self.cookies,
                                       timeout=self.timeout,
                                       connector=self.connector)
-        return Box(resp)
+        if resp is None:
+            pass
+        else:
+            return Box(resp)
 
     async def add_vote(self, forum_id: int, thread_name: str, thread_text: str,
                        vote1: str, vote2: str = "", vote3: str = "",
@@ -850,6 +853,18 @@ class MpetsApi:
         return await profile.post_message(pet_id, message, self.cookies,
                                           self.connector)
 
+    async def gold_chest(self):
+        resp = await main.gold_chest(cookies=self.cookies,
+                                     timeout=self.timeout,
+                                     connector=self.connector)
+        return Box(resp)
+
+    async def open_gold_chest(self):
+        resp = await main.open_gold_chest(cookies=self.cookies,
+                                          timeout=self.timeout,
+                                          connector=self.connector)
+        return Box(resp)
+
     async def test_proxy(self, ):
         proxies = {
             'http': 'socks5://127.0.0.1:9050',
@@ -860,7 +875,7 @@ class MpetsApi:
             'https': 'socks5://176.9.119.170:1080'
         }
         connector = ProxyConnector.from_url('socks5://127.0.0.1:9050')
-        #connector = None
+        # connector = None
         async with ClientSession(connector=connector) as session:
             r = await session.get("https://api.ipify.org")
             r = await r.text()

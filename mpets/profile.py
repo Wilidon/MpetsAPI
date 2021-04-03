@@ -14,6 +14,7 @@ async def profile(pet_id, cookies, timeout, connector, count=1):
         session = ClientSession(cookies=cookies, timeout=timeout,
                                 connector=connector)
         prof = await session.get("http://mpets.mobi/profile")
+        await session.close()
         prof = BeautifulSoup(await prof.read(), 'lxml')
         ava_id = prof.find('img', {'class': 'ava_prof'})['src'].split("avatar")[1].split(".")[0]
         name = prof.find("div", {"class": "stat_item"}).text.split(", ")[0].replace(' ', '')

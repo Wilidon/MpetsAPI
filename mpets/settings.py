@@ -20,11 +20,11 @@ async def change_pw(password, cookies, timeout, connector):
                                      connector=connector) as session:
                 data = {'pw': password}
                 resp = await session.post("http://mpets.mobi/change_pw", data=data)
+                await session.close()
                 if "Пароль успешно изменен!" in await resp.text():
                     return {"status": True,
                             "password": password}
                 elif "Вы кликаете слишком быстро." in await resp.text():
-                    mpets = MpetsApi()
                     return {"status": True,
                             "password": password}
                 else:

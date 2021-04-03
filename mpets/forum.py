@@ -141,7 +141,6 @@ async def add_thread(forum_id, thread_name, thread_text, club_only,
         # TODO
         return {"status": False,
                 "code": 0,
-                "thread_id": thread_id,
                 "msg": e}
 
 
