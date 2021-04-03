@@ -464,7 +464,7 @@ async def task_reward(task_id, cookies, timeout, connector):
                                  connector=connector)
         params = {"id": task_id}
         await session.get(f"{MPETS_URL}/task_reward", params=params)
-        #await session.close()
+        await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False,
