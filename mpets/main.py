@@ -428,7 +428,7 @@ async def task(cookies, timeout, connector):
                                  connector=connector)
         tasks_list = []
         resp = await session.get(f"{MPETS_URL}/task")
-        #await session.close()
+        await session.close()
         resp = BeautifulSoup(await resp.read(), "lxml")
         tasks = resp.find_all("div", {"class": "wr_c3 m-3"})
         for task in tasks:
@@ -699,5 +699,23 @@ async def open_gold_chest(cookies, timeout, connector):
                     "found": found}
     except Exception as e:
         return {"status": "error",
+                "code": 0,
+                "msg": e}
+
+
+async def check_ban(cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        resp = await session.get(f"{MPETS_URL}/chat")
+        await session.close()
+        if "На вас наложен бан" in await resp.text() and "осталось" in await resp.text():
+            return {"status": True,
+                    "ban": True}
+        else:
+            return {"status": True,
+                    "ban": False}
+    except Exception as e:
+        return {"status": False,
                 "code": 0,
                 "msg": e}
