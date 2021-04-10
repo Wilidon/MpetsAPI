@@ -81,7 +81,16 @@ async def wakeup_sleep_info(cookies, timeout, connector):
 
 
 async def wakeup_sleep(cookies, timeout, connector):
-    pass
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        await session.get(f"{MPETS_URL}/wakeup_sleep")
+        await session.close()
+        return {"status": True}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def wakeup(cookies, timeout, connector):
@@ -328,7 +337,7 @@ async def glade_dig(cookies, timeout, connector):
         session = ClientSession(cookies=cookies, timeout=timeout,
                                 connector=connector)
         await session.get(f"{MPETS_URL}/glade_dig")
-        #await session.close()
+        # await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False,
@@ -375,8 +384,8 @@ async def travel(cookies, timeout, connector):
 async def go_travel(travel_id, cookies, timeout, connector):
     try:
         session = ClientSession(cookies=cookies,
-                                 timeout=timeout,
-                                 connector=connector)
+                                timeout=timeout,
+                                connector=connector)
         params = {"id": travel_id}
         await session.get(f"{MPETS_URL}/go_travel",
                           params=params)
@@ -425,8 +434,8 @@ async def garden_collect(garden_id, cookies, connector):
 async def task(cookies, timeout, connector):
     try:
         session = ClientSession(cookies=cookies,
-                                 timeout=timeout,
-                                 connector=connector)
+                                timeout=timeout,
+                                connector=connector)
         tasks_list = []
         resp = await session.get(f"{MPETS_URL}/task")
         await session.close()
@@ -461,8 +470,8 @@ async def task(cookies, timeout, connector):
 async def task_reward(task_id, cookies, timeout, connector):
     try:
         session = ClientSession(cookies=cookies,
-                                 timeout=timeout,
-                                 connector=connector)
+                                timeout=timeout,
+                                connector=connector)
         params = {"id": task_id}
         await session.get(f"{MPETS_URL}/task_reward", params=params)
         await session.close()
@@ -476,8 +485,8 @@ async def task_reward(task_id, cookies, timeout, connector):
 async def items(category, cookies, timeout, connector):
     try:
         session = ClientSession(cookies=cookies,
-                                 timeout=timeout,
-                                 connector=connector)
+                                timeout=timeout,
+                                connector=connector)
         params = {"category": category}
         if category == "home":
             pass
@@ -527,8 +536,8 @@ async def items(category, cookies, timeout, connector):
 async def buy(category, item_id, cookies, timeout, connector):
     try:
         session = ClientSession(cookies=cookies,
-                                 timeout=timeout,
-                                 connector=connector)
+                                timeout=timeout,
+                                connector=connector)
         params = {"category": category, "id": item_id}
         if category == "home":
             pass
@@ -581,6 +590,20 @@ async def best(type, page, cookies, timeout, connector):
                              "beauty": beauty})
             return {"status": True,
                     "pets": pets}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
+
+
+async def buy_heart(heart, cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        params = {"heart": heart}
+        resp = await session.get(f"{MPETS_URL}/buy_heart", params=params)
+        await session.close()
+        return {"status": True}
     except Exception as e:
         return {"status": False,
                 "code": 0,

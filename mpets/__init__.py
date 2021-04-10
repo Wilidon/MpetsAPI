@@ -314,6 +314,13 @@ class MpetsApi:
                                connector=self.connector)
         return Box(resp)
 
+    async def buy_heart(self, heart: int = 100):
+        resp = await main.buy_heart(heart=heart,
+                                    cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector
+                                    )
+
     async def find_pet(self, name):
         """ Поиск питомца
 
@@ -861,6 +868,26 @@ class MpetsApi:
     async def post_message(self, pet_id, message, gift_id=None):
         return await profile.post_message(pet_id, message, self.cookies,
                                           self.connector)
+
+    async def chest(self):
+        resp = await profile.chest(cookies=self.cookies,
+                                   timeout=self.timeout,
+                                   connector=self.connector)
+        return Box(resp)
+
+    async def wear_item(self, item_id: int):
+        resp = await profile.wear_item(item_id=item_id,
+                                       cookies=self.cookies,
+                                       timeout=self.timeout,
+                                       connector=self.connector)
+        return Box(resp)
+
+    async def sell_item(self, item_id: int):
+        resp = await profile.sell_item(item_id=item_id,
+                                       cookies=self.cookies,
+                                       timeout=self.timeout,
+                                       connector=self.connector)
+        return Box(resp)
 
     async def gold_chest(self):
         resp = await main.gold_chest(cookies=self.cookies,

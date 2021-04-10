@@ -152,8 +152,95 @@ async def view_profile(pet_id, cookies, timeout, connector):
                 'msg': e}
 
 
-async def chest(cookies):
-    pass
+async def chest(cookies, timeout, connector):
+    try:
+        items = []
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        resp = await session.get(f"{MPETS_URL}/chest")
+        await session.close()
+        if "Вы кликаете слишком быстро." in await resp.text():
+            return await chest(cookies, timeout, connector)
+        resp = BeautifulSoup(await resp.read(), 'lxml')
+        if "В шкафу пусто" in resp.text:
+            return {"status": True,
+                    "items": items}
+        chest_items = resp.find_all('div', {'class': 'item'})
+        for item in chest_items:
+            if "Стальной ключ" in item.text:
+                type = "key"
+                item_id = item.find("a")['href'].split("=")[1]
+                if "&" in item_id:
+                    item_id = item_id.split("&")[0]
+                item_id = int(item_id)
+                items.append({"type": type,
+                              "item_id": item_id})
+            if "Стальной сундук" in item.text:
+                type = "chest"
+                item_id = item.find("a")['href'].split("=")[1]
+                if "&" in item_id:
+                    item_id = item_id.split("&")[0]
+                item_id = int(item_id)
+                timeout = item.find("span", {"class": "succes"}).text.split(" ")[2]
+                # timeout = int(timeout)
+                items.append({"type": type,
+                              "item_id": item_id,
+                              "timeout": timeout})
+            if "Надеть" in item.text:
+                type = "cloth"
+                item_id = item.find("span", {"class": "nowrap"})
+                item_id = item_id.find("a")['href'].split("=")[1]
+                if "&" in item_id:
+                    item_id = item_id.split("&")[0]
+                item_id = int(item_id)
+                items.append({"type": type,
+                              "item_id": item_id,
+                              "wear_item": True})
+            else:
+                if "Продать" in item.text:
+                    type = "cloth"
+                    item_id = item.find("span", {"class": "nowrap"})
+                    item_id = item_id.find("a")['href'].split("=")[1]
+                    if "&" in item_id:
+                        item_id = item_id.split("&")[0]
+                    item_id = int(item_id)
+                    items.append({"type": type,
+                                  "item_id": item_id,
+                                  "wear_item": False})
+        return {"status": True,
+                "items": items}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
+
+
+async def wear_item(item_id, cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        params = {"id": item_id, "type": "cloth", "back": "chest"}
+        await session.get(f"{MPETS_URL}/wear_item", params=params)
+        await session.close()
+        return {"status": True}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
+
+
+async def sell_item(item_id, cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        params = {"id": item_id, "type": "cloth", "back": "chest"}
+        await session.get(f"{MPETS_URL}/sell_item", params=params)
+        await session.close()
+        return {"status": True}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def view_posters(cookies):
