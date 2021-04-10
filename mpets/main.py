@@ -5,14 +5,15 @@ from bs4 import BeautifulSoup
 from mpets.utils.constants import MPETS_URL
 
 
-async def actions(cookies, timeout, connector):
+async def actions(amount, cookies, timeout, connector):
     try:
         session = ClientSession(cookies=cookies, timeout=timeout,
                                 connector=connector)
-        for a in range(3):
+        for a in range(amount):
             for b in range(5):
                 resp = await session.get(f"{MPETS_URL}/?action=food&rand=1")
                 if "Разбудить за" in await resp.text() or "Играть ещё" in await resp.text():
+                    await session.close()
                     return {"status": True, "play": False}
                 await asyncio.sleep(0.4)
                 await session.get(f"{MPETS_URL}/?action=play&rand=1")
@@ -30,7 +31,7 @@ async def actions(cookies, timeout, connector):
             resp = await wakeup(cookies, timeout, connector)
             if resp["status"] is False:
                 await wakeup(cookies, timeout, connector)
-        #await session.close()
+        await session.close()
         return {"status": True}
     except Exception as e:
         return {"status": False,

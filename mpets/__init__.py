@@ -69,10 +69,11 @@ class MpetsApi:
             self.pet_id = resp["pet_id"]
         return Box(resp)
 
-    async def actions(self):
-        """ Три раза кормит, играет и ходит на выставку
+    async def actions(self, amount: int = 3):
+        """ Кормит, играет и ходит на выставку
         """
-        resp = await main.actions(cookies=self.cookies,
+        resp = await main.actions(amount=amount,
+                                  cookies=self.cookies,
                                   timeout=self.timeout,
                                   connector=self.connector)
         return Box(resp)
