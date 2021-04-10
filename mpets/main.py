@@ -15,19 +15,19 @@ async def actions(amount, cookies, timeout, connector):
                 if "Разбудить за" in await resp.text() or "Играть ещё" in await resp.text():
                     await session.close()
                     return {"status": True, "play": False}
-                await asyncio.sleep(0.4)
+                await asyncio.sleep(0.1)
                 await session.get(f"{MPETS_URL}/?action=play&rand=1")
-                while True:
-                    resp = await session.get(f"{MPETS_URL}/show")
-                    await asyncio.sleep(0.4)
-                    if "Соревноваться" in await resp.text():
-                        await session.get(f"{MPETS_URL}/show")
-                        await asyncio.sleep(0.4)
-                    elif "Вы кликаете слишком быстро." in await resp.text():
-                        await session.get(f"{MPETS_URL}/show")
-                        await asyncio.sleep(0.4)
-                    else:
-                        break
+            while True:
+                resp = await session.get(f"{MPETS_URL}/show")
+                await asyncio.sleep(0.1)
+                if "Соревноваться" in await resp.text():
+                    await session.get(f"{MPETS_URL}/show")
+                    await asyncio.sleep(0.1)
+                elif "Вы кликаете слишком быстро." in await resp.text():
+                    await session.get(f"{MPETS_URL}/show")
+                    await asyncio.sleep(0.1)
+                else:
+                    break
             resp = await wakeup(cookies, timeout, connector)
             if resp["status"] is False:
                 await wakeup(cookies, timeout, connector)
