@@ -399,8 +399,18 @@ async def train(cookies, connector):
     pass
 
 
-async def train_skill(skill, cookies, connector):
-    pass
+async def train_skill(skill, cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies,
+                                timeout=timeout,
+                                connector=connector)
+        params = {"skill": skill}
+        await session.get(f"{MPETS_URL}/train_skill",
+                          params=params)
+        await session.close()
+        return {"status": True}
+    except Exception as e:
+        return {"status": False, "code": 0, "msg": e}
 
 
 async def assistants(cookies, connector):

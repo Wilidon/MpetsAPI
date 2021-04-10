@@ -247,8 +247,11 @@ class MpetsApi:
         pass
 
     async def train_skill(self, skill):
-        # TODO
-        pass
+        resp = await main.train_skill(skill=skill,
+                                      cookies=self.cookies,
+                                      timeout=self.timeout,
+                                      connector=self.connector)
+        return Box(resp)
 
     async def assistants(self):
         # TODO
