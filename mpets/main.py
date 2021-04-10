@@ -15,17 +15,15 @@ async def actions(amount, cookies, timeout, connector):
                 if "Разбудить за" in await resp.text() or "Играть ещё" in await resp.text():
                     await session.close()
                     return {"status": True, "play": False}
-                await asyncio.sleep(0.1)
                 await session.get(f"{MPETS_URL}/?action=play&rand=1")
             while True:
                 resp = await session.get(f"{MPETS_URL}/show")
                 await asyncio.sleep(0.1)
                 if "Соревноваться" in await resp.text():
                     await session.get(f"{MPETS_URL}/show")
-                    await asyncio.sleep(0.1)
                 elif "Вы кликаете слишком быстро." in await resp.text():
                     await session.get(f"{MPETS_URL}/show")
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(1)
                 else:
                     break
             resp = await wakeup(cookies, timeout, connector)
@@ -503,6 +501,7 @@ async def items(category, cookies, timeout, connector):
         elif category == "effect":
             resp = await session.get("http://mpets.mobi/items",
                                      params=params)
+            await session.close()
             if "Вы кликаете слишком быстро." in await resp.text():
                 return await items(category, cookies, timeout, connector)
             resp = BeautifulSoup(await resp.read(), "lxml")
@@ -533,9 +532,72 @@ async def items(category, cookies, timeout, connector):
                         return {"status": True,
                                 "effect": "None"}
         elif category == "food":
-            pass
+            resp = await session.get("http://mpets.mobi/items",
+                                     params=params)
+            await session.close()
+            if "Вы кликаете слишком быстро." in await resp.text():
+                return await items(category, cookies, timeout, connector)
+            resp = BeautifulSoup(await resp.read(), "lxml")
+            shop_item = resp.find("div", {"class": "shop_item"})
+            name = shop_item.find("span", {"class": "disabled"}).text
+            beauty = shop_item.find("img", {"src": "/view/image/icons/beauty.png"}).next_element.split(" ")[0]
+            exp = shop_item.find("img", {"src": "/view/image/icons/expirience.png"}).next_element.split(" ")[0]
+            heart = shop_item.find("img", {"src": "/view/image/icons/heart.png"}).next_element.split(" ")[0]
+            if "Купить за" in shop_item.text:
+                item_id = shop_item.find("a")['href'].split("id=")[1].split("&")[0]
+                item_id = int(item_id)
+                can_buy = True
+                coins = shop_item.find("span", {"class": "bc plr5"}).text.split("за ")[1]
+                coins = int(coins)
+            elif "требуется" in shop_item.text:
+                item_id = shop_item.find("a")['href'].split("id=")[1].split("&")[0]
+                item_id = int(item_id)
+                item_id = 0
+                can_buy = False
+            return {"status": True,
+                    "name": name,
+                    "beauty": beauty,
+                    "exp": exp,
+                    "heart": heart,
+                    "can_buy": False if 'can_buy' not in locals() else can_buy,
+                    "item_id": 0 if 'item_id' not in locals() else item_id,
+                    "coins": 0 if 'coins' not in locals() else coins,
+                    }
         elif category == "play":
-            pass
+            resp = await session.get("http://mpets.mobi/items",
+                                     params=params)
+            await session.close()
+            if "Вы кликаете слишком быстро." in await resp.text():
+                return await items(category, cookies, timeout, connector)
+            resp = BeautifulSoup(await resp.read(), "lxml")
+            shop_item = resp.find("div", {"class": "shop_item"})
+            name = shop_item.find("span", {"class": "disabled"}).text
+            beauty = shop_item.find("img", {"src": "/view/image/icons/beauty.png"}).next_element.split(" ")[0]
+            beauty = int(beauty)
+            exp = shop_item.find("img", {"src": "/view/image/icons/expirience.png"}).next_element.split(" ")[0]
+            exp = int(exp)
+            heart = shop_item.find("img", {"src": "/view/image/icons/heart.png"}).next_element.split(" ")[0]
+            heart = int(heart)
+            if "Купить за" in shop_item.text:
+                item_id = shop_item.find("a")['href'].split("id=")[1].split("&")[0]
+                item_id = int(item_id)
+                can_buy = True
+                coins = shop_item.find("span", {"class": "bc plr5"}).text.split("за ")[1]
+                coins = int(coins)
+            elif "требуется" in shop_item.text:
+                item_id = shop_item.find("a")['href'].split("id=")[1].split("&")[0]
+                item_id = int(item_id)
+                item_id = 0
+                can_buy = False
+            return {"status": True,
+                    "name": name,
+                    "beauty": beauty,
+                    "exp": exp,
+                    "heart": heart,
+                    "can_buy": False if 'can_buy' not in locals() else can_buy,
+                    "item_id": 0 if 'item_id' not in locals() else item_id,
+                    "coins": coins,
+                    }
 
     except Exception as e:
         return {"status": False,
@@ -552,18 +614,18 @@ async def buy(category, item_id, cookies, timeout, connector):
         if category == "home":
             pass
         elif category == "effect":
-            resp = await session.get("http://mpets.mobi/buy",
-                                     params=params)
+            await session.get("http://mpets.mobi/buy",
+                              params=params)
             await session.close()
             return {"status": True}
         elif category == "food":
-            resp = await session.get("http://mpets.mobi/buy",
-                                     params=params)
+            await session.get("http://mpets.mobi/buy",
+                              params=params)
             await session.close()
             return {"status": True}
         elif category == "play":
-            resp = await session.get("http://mpets.mobi/buy",
-                                     params=params)
+            await session.get("http://mpets.mobi/buy",
+                              params=params)
             await session.close()
             return {"status": True}
     except Exception as e:
