@@ -1,6 +1,10 @@
 from pydantic import BaseModel, Field
 
 
+class ReturnTrueStatus(BaseModel):
+    status: bool
+
+
 class Profile(BaseModel):
     status: bool
     pet_id: int
