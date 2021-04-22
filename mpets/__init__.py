@@ -81,7 +81,6 @@ class MpetsApi:
                                          password=self.password,
                                          timeout=self.timeout,
                                          connector=self.connector)
-        print(resp)
         if resp["status"]:
             self.cookies = resp["cookies"]
             self.pet_id = resp["pet_id"]

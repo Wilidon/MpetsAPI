@@ -5,16 +5,14 @@ from bs4 import BeautifulSoup
 from mpets.utils.constants import MPETS_URL
 
 
-
 async def user_agreement(agreement_confirm, params, cookies, timeout, connector):
     try:
         session = ClientSession(cookies=cookies, timeout=timeout,
                                 connector=connector)
         data = {"agreement_confirm": agreement_confirm,
-                  "params": params}
+                "params": params}
         resp = await session.post(f"{MPETS_URL}/user_agreement", data=data)
         await session.close()
-        print(resp.status)
         if resp.status == 200:
             return {"status": True}
         else:
@@ -22,7 +20,6 @@ async def user_agreement(agreement_confirm, params, cookies, timeout, connector)
                     "code": -1,
                     "msg": "another status code"}
     except Exception as e:
-        raise
         return {"status": False,
                 "code": 0,
                 "msg": e}
