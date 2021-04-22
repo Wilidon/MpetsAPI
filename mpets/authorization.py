@@ -4,6 +4,7 @@ import string
 
 from aiohttp import ClientTimeout, ClientSession
 
+from mpets.main import user_agreement
 from mpets.profile import profile
 from mpets.settings import change_pw
 
@@ -53,28 +54,48 @@ async def login(name, password, timeout, connector):
     try:
         session = ClientSession(timeout=timeout, connector=connector)
         data = {"name": name, "password": password}
-        async with session.post(f"{MPETS_URL}/login",
-                                data=data) as resp:
-            await session.close()
-            if "Неправильное Имя или Пароль" in await resp.text():
-                return {"status": False,
-                        "code": 6,
-                        "msg": "Incorrect name or password"}
-            elif "Ваш питомец заблокирован" in await resp.text():
-                return {"status": False,
-                        "code": 7,
-                        "msg": "This account has blocked"}
-            elif "Магазин" in await resp.text():
-                cookies = session.cookie_jar.filter_cookies(MPETS_URL)
-                for key, cookie in cookies.items():
-                    if cookie.key == "PHPSESSID":
-                        cookies = {"PHPSESSID": cookie.value}
-                    if cookie.key == "id":
-                        pet_id = int(cookie.value)
+        resp = await session.post(f"{MPETS_URL}/login", data=data) 
+        await session.close()
+        if "Неправильное Имя или Пароль" in await resp.text():
+            return {"status": False,
+                    "code": 6,
+                    "msg": "Incorrect name or password"}
+        elif "Ваш питомец заблокирован" in await resp.text():
+            return {"status": False,
+                    "code": 7,
+                    "msg": "This account has blocked"}
+        elif "Прочтите, это важно!" in await resp.text():
+            cookies = session.cookie_jar.filter_cookies(MPETS_URL)
+            for key, cookie in cookies.items():
+                if cookie.key == "PHPSESSID":
+                    cookies = {"PHPSESSID": cookie.value}
+                if cookie.key == "id":
+                    pet_id = int(cookie.value)
+            resp = await user_agreement(agreement_confirm=True,
+                                        params=1,
+                                        cookies=cookies,
+                                        timeout=timeout,
+                                        connector=connector)
+            if resp['status'] is True:
                 return {"status": True,
-                        "pet_id": pet_id,
-                        "name": name,
-                        "cookies": cookies}
+                    "pet_id": pet_id,
+                    "name": name,
+                    "cookies": cookies}
+            else:
+                return {"status": False,
+                        "code": -1,
+                        "msg": f"не удалось принять соглашение {resp['msg']}"}
+        elif "Магазин" in await resp.text():
+            cookies = session.cookie_jar.filter_cookies(MPETS_URL)
+            for key, cookie in cookies.items():
+                if cookie.key == "PHPSESSID":
+                    cookies = {"PHPSESSID": cookie.value}
+                if cookie.key == "id":
+                    pet_id = int(cookie.value)
+            return {"status": True,
+                    "pet_id": pet_id,
+                    "name": name,
+                    "cookies": cookies}
     except asyncio.TimeoutError as e:
         return await login(name, password, timeout, connector)
     except Exception as e:

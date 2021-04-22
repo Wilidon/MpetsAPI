@@ -14,7 +14,7 @@ import asyncio
 from mpets import MpetsApi
 
 async def main():
-    mpets = MpetsApi("nick", "password")
+    mpets = MpetsApi(name="nick", password="password", timeout=5, fast_mode=True)
     await mpets.login()
     
     profile = await mpets.profile()

@@ -125,3 +125,5 @@ dmypy.json
 .pyre/
 .idea
 test.py
+testapi.py
+.vscode/launch.json

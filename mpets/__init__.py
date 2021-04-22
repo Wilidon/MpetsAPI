@@ -4,8 +4,7 @@ from aiohttp_socks import ProxyConnector
 from box import Box
 
 from mpets import authorization, forum, main, profile, club
-from mpets.models.authorization import Login, Start
-
+from mpets import models
 
 class MpetsApi:
     def __init__(self, name: str = None, password: str = None,
@@ -24,10 +23,28 @@ class MpetsApi:
 
         if fast_mode is False:
             ...
+    
+    async def user_agreement(self, agreement_confirm: bool = True,
+                             params: int = 1) -> models.ReturnTrueStatus:
+        """Принимает пользовательское соглашение
 
+        Args:
+            agreement_confirm (bool, optional): [description]. Defaults to True.
+            params (int, optional): [description]. Defaults to 1.
+
+        Returns:
+            models.ReturnTrueStatus: [description]
+        """
+        resp = await main.user_agreement(agreement_confirm=agreement_confirm,
+                                         params=params,
+                                         cookies=self.cookies,
+                                         timeout=self.timeout,
+                                         connector=self.connector)
+        return Box(resp)
+    
     async def start(self, name: str = "standard",
                     password: str = None,
-                    type: int = 1):
+                    type: int = 1) -> models.Start:
         """ Регистрация питомца
 
             Args:
@@ -51,7 +68,7 @@ class MpetsApi:
             self.pet_id = resp["pet_id"]
         return Box(resp)
 
-    async def login(self):
+    async def login(self) -> models.Login:
         """ Авторизация
 
             Resp:
@@ -64,6 +81,7 @@ class MpetsApi:
                                          password=self.password,
                                          timeout=self.timeout,
                                          connector=self.connector)
+        print(resp)
         if resp["status"]:
             self.cookies = resp["cookies"]
             self.pet_id = resp["pet_id"]
