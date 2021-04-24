@@ -1,5 +1,6 @@
 import asyncio
 import re
+import traceback
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -78,7 +79,7 @@ async def profile(pet_id, cookies, timeout, connector, count=1):
             return {'status': False, 'code': 1, 'msg': e}
         await profile(pet_id, cookies, timeout, connector, count + 1)
     except Exception as e:
-        return {'status': False, 'code': '', 'msg': e}
+        return {'status': False, 'code': '', 'msg': traceback.print_exc()}
 
 
 async def view_profile(pet_id, cookies, timeout, connector):
