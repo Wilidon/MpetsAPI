@@ -855,8 +855,12 @@ class MpetsApi:
         return Box(resp)
 
     async def club_budget_history(self, club_id, sort=1, page=1):
-        return await club.club_budget_history(club_id, sort, page,
-                                              self.cookies, self.connector)
+        resp = await club.club_budget_history(club_id=club_id,
+                                              sort=sort,
+                                              page=page,
+                                              cookies=self.cookies,
+                                              connector=self.connector)
+        return Box(resp)
 
     async def club_budget_history_all(self, club_id, sort=1, page=1):
         return await club.club_budget_history_all(club_id, sort, page,
@@ -875,6 +879,14 @@ class MpetsApi:
                                cookies=self.cookies,
                                timeout=self.timeout,
                                connector=self.connector)
+        return Box(resp)
+
+    async def chat_message(self, club_id, message):
+        resp = await club.chat_message(club_id=club_id,
+                                       message=message,
+                                       cookies=self.cookies,
+                                       timeout=self.timeout,
+                                       connector=self.connector)
         return Box(resp)
 
     async def collection_changer(self):

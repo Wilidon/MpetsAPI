@@ -232,8 +232,9 @@ async def club_budget(club_id, cookies, connector):
                 coins = resp.find("div", {"class": "cntr"}).find_all("img", {"class": "price_img"})[1].next_element
                 hearts = resp.find("div", {"class": "cntr"}).find_all("img", {"class": "price_img"})[2].next_element
                 max_coins = \
-                resp.find("div", {"class": "p3 left"}).find_all("img", {"class": "price_img"})[0].next_element.split(
-                    ": ")[1]
+                    resp.find("div", {"class": "p3 left"}).find_all("img", {"class": "price_img"})[
+                        0].next_element.split(
+                        ": ")[1]
             return {'status': 'ok',
                     'coins': coins,
                     'hearts': hearts,
@@ -274,6 +275,7 @@ async def club_budget_history(club_id, sort, page, cookies, connector):
                 pet_id = int(pet.find("a")['href'].split("=")[1])
                 name = pet.find("a").next_element
                 count = pet.text.split(": ")[1].replace("\t", "")
+                count = int(count)
                 players.append({'pet_id': pet_id, 'name': name, 'count': count})
             resp = resp.find("div", {"class": "msg mrg_msg1 mt10 c_brown4"})
             resp = resp.find("div", {"class": "wr_c4 td_un"})
@@ -393,6 +395,23 @@ async def chat(club_id, page, cookies, timeout, connector):
                     'club_id': club_id,
                     'page': page,
                     'messages': messages}
+    except Exception as e:
+        # TODO
+        return {'status': 'error', 'code': 0, 'msg': ''}
+
+
+async def chat_message(club_id, message, cookies, timeout, connector):
+    try:
+        async with ClientSession(cookies=cookies,
+                                 timeout=timeout,
+                                 connector=connector) as session:
+            data = {'message_text': message,
+                    'club_id': club_id,
+                    'page': 1}
+            resp = await session.post(
+                "http://mpets.mobi/chat_message", data=data)
+            await session.close()
+            return {'status': True}
     except Exception as e:
         # TODO
         return {'status': 'error', 'code': 0, 'msg': ''}
