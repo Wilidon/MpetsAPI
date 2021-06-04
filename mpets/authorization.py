@@ -54,7 +54,7 @@ async def login(name, password, timeout, connector):
     try:
         session = ClientSession(timeout=timeout, connector=connector)
         data = {"name": name, "password": password}
-        resp = await session.post(f"{MPETS_URL}/login", data=data) 
+        resp = await session.post(f"{MPETS_URL}/login", data=data)
         await session.close()
         if "Неправильное Имя или Пароль" in await resp.text():
             return {"status": False,
@@ -78,9 +78,9 @@ async def login(name, password, timeout, connector):
                                         connector=connector)
             if resp['status'] is True:
                 return {"status": True,
-                    "pet_id": pet_id,
-                    "name": name,
-                    "cookies": cookies}
+                        "pet_id": pet_id,
+                        "name": name,
+                        "cookies": cookies}
             else:
                 return {"status": False,
                         "code": -1,

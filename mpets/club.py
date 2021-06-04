@@ -325,7 +325,7 @@ async def club_budget_history_all(club_id, sort, page, cookies, connector):
         return {'status': 'error', 'code': 0, 'msg': ''}
 
 
-async def forums(forum_id, cookies, timeout, connector):
+async def forums(club_id, cookies, timeout, connector):
     try:
         async with ClientSession(cookies=cookies,
                                  timeout=ClientTimeout(total=timeout),
@@ -344,7 +344,7 @@ async def forums(forum_id, cookies, timeout, connector):
                 forums_id.append(
                     {'forum_id': forum_id, 'name': name})
             return {'status': 'ok',
-                    'club_id': forum_id,
+                    'club_id': club_id,
                     'forums_id': forums_id}
     except Exception as e:
         # TODO
@@ -354,7 +354,7 @@ async def forums(forum_id, cookies, timeout, connector):
 async def chat(club_id, page, cookies, timeout, connector):
     try:
         async with ClientSession(cookies=cookies,
-                                 timeout=ClientTimeout(total=timeout),
+                                 timeout=timeout,
                                  connector=connector) as session:
             params = {'id': club_id, 'page': page}
             messages = []
@@ -366,12 +366,30 @@ async def chat(club_id, page, cookies, timeout, connector):
             resp = BeautifulSoup(await resp.read(), "lxml")
             pets = resp.find_all("div", {'class': 'post_chat'})
             for pet in pets:
+                moderator_id = message_deleted = False
+                message_id = 0
                 pet_id = int(pet.find("a")['href'].split("=")[1])
                 name = pet.find("a").next_element
-                message = pet.find("span", {"class": "pet_msg"}).text
+                try:
+                    message = pet.find("span", {"class": "pet_msg"}).text
+                except AttributeError as e:
+                    message_deleted = True
+                    moderator_id = pet.find("a", {"class": "gray_link"})['href']
+                    moderator_id = int(moderator_id.split("=")[1])
+                    message = None
+                try:
+                    message_id = pet.find("a", {"class": "post_control"})['href']
+                    message_id = int(message_id.split("=")[1].split("&")[0])
+                except Exception as e:
+                    message_id = 0
                 messages.append(
-                    {'pet_id': pet_id, 'name': name, 'message': message})
-            return {'status': 'ok',
+                    {'pet_id': pet_id,
+                     'name': name,
+                     'message_id': message_id,
+                     'message': message,
+                     'message_deleted': message_deleted,
+                     'moderator_id': moderator_id})
+            return {'status': True,
                     'club_id': club_id,
                     'page': page,
                     'messages': messages}

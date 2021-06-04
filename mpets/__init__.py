@@ -6,6 +6,7 @@ from box import Box
 from mpets import authorization, forum, main, profile, club
 from mpets import models
 
+
 class MpetsApi:
     def __init__(self, name: str = None, password: str = None,
                  cookies: str = None, timeout: int = 5,
@@ -23,7 +24,7 @@ class MpetsApi:
 
         if fast_mode is False:
             ...
-    
+
     async def user_agreement(self, agreement_confirm: bool = True,
                              params: int = 1) -> models.ReturnTrueStatus:
         """Принимает пользовательское соглашение
@@ -41,10 +42,10 @@ class MpetsApi:
                                          timeout=self.timeout,
                                          connector=self.connector)
         return Box(resp)
-    
+
     async def start(self, name: str = "standard",
                     password: str = None,
-                    type: int = 1) -> models.Start:
+                    type: int = 1) -> Box:
         """ Регистрация питомца
 
             Args:
@@ -68,7 +69,7 @@ class MpetsApi:
             self.pet_id = resp["pet_id"]
         return Box(resp)
 
-    async def login(self) -> models.Login:
+    async def login(self) -> Box:
         """ Авторизация
 
             Resp:
@@ -860,6 +861,55 @@ class MpetsApi:
     async def club_budget_history_all(self, club_id, sort=1, page=1):
         return await club.club_budget_history_all(club_id, sort, page,
                                                   self.cookies, self.connector)
+
+    async def forums(self, club_id):
+        resp = await club.forums(club_id=club_id,
+                                 cookies=self.cookies,
+                                 timeout=self.timeout,
+                                 connector=self.connector)
+        return Box(resp)
+
+    async def chat(self, club_id=0, page=1):
+        resp = await club.chat(club_id=club_id,
+                               page=page,
+                               cookies=self.cookies,
+                               timeout=self.timeout,
+                               connector=self.connector)
+        return Box(resp)
+
+    async def collection_changer(self):
+        resp = await club.collection_changer(cookies=self.cookies,
+                                             timeout=self.timeout,
+                                             connector=self.connector)
+        return Box(resp)
+
+    async def reception(self, club_id):
+        resp = await club.reception(cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
+        return Box(resp)
+
+    async def club_history(self, club_id, type=1, page=1):
+        resp = await club.club_history(club_id=club_id,
+                                       type=type,
+                                       page=page,
+                                       cookies=self.cookies,
+                                       timeout=self.timeout,
+                                       connector=self.connector
+                                       )
+        return Box(resp)
+
+    async def club_hint(self):
+        resp = await club.club_hint(cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
+        return Box(resp)
+
+    async def club_settings(self, club_id):
+        resp = await club.club_settings(cookies=self.cookies,
+                                        timeout=self.timeout,
+                                        connector=self.connector)
+        return Box(resp)
 
     async def leave(self, cookies):
         return await club.leave(cookies=cookies)

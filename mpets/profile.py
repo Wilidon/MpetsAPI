@@ -45,6 +45,7 @@ async def profile(pet_id, cookies, timeout, connector, count=1):
             elif 'Красота' in ac.text:
                 beauty = int(ac.text.split(": ")[1])
             elif 'Клуб:' in ac.text:
+                club_id = int(ac.find("a", {'class': 'darkgreen_link'})['href'].split("=")[1])
                 club = ac.text.split(": ")[1].split(",")[0]
                 rank_club = ac.text.split(", ")[1]
             elif 'Верность клубу' in ac.text:
@@ -59,8 +60,7 @@ async def profile(pet_id, cookies, timeout, connector, count=1):
             elif 'Сердечки:' in ac.text:
                 hearts = int(ac.text.split(": ")[1].replace('\t', ''))
             i += 1
-        # await session.close()
-        return {'status': 'ok',
+        return {'status': True,
                 'pet_id': pet_id,
                 'name': name,
                 'level': level,
@@ -72,6 +72,7 @@ async def profile(pet_id, cookies, timeout, connector, count=1):
                 'hearts': hearts,
                 'family_id': family_id,
                 'family_name': family_name,
+                'club_id': club_id,
                 'club': club,
                 'rank': rank_club,
                 'club_const': club_const,
@@ -93,6 +94,7 @@ async def view_profile(pet_id, cookies, timeout, connector):
                                  connector=connector) as session:
             params = {"pet_id": pet_id}
             resp = await session.get(f"{MPETS_URL}/view_profile", params=params)
+            await session.close()
             if "Вы кликаете слишком быстро." in await resp.text():
                 return await view_profile(pet_id, cookies,
                                           timeout, connector)
