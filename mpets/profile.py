@@ -104,6 +104,7 @@ async def view_profile(pet_id, cookies, timeout, connector):
             name = \
                 resp.find("div", {"class": "stat_item"}).text.split(", ")[0].replace('\n', '').split(" ", maxsplit=1)[1]
             level = resp.find("div", {"class": "stat_item"}).text.split(", ")[1].split(" ")[0]
+            level = int(level)
             rank = resp.find("div", {"class": "left font_14 pet_profile_stat"}).find_all("div", {"class": "stat_item"})
             for ac in rank:
                 if 'Посл. вход:' in ac.text:
