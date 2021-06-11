@@ -743,8 +743,20 @@ async def show_coin(cookies, connector):
     pass
 
 
-async def show_coin_get(cookies, connector):
-    pass
+async def show_coin_get(cookies, timeout, connector):
+    try:
+        async with ClientSession(cookies=cookies,
+                                 timeout=timeout,
+                                 connector=connector) as session:
+            resp = await session.get(f"{MPETS_URL}/show_coin_get")
+            await session.close()
+            if "Вы кликаете слишком быстро" in await resp.text():
+                return await show_coin_get(cookies, timeout, connector)
+            return {"status": True}
+    except Exception as e:
+        return {"status": "error",
+                "code": 0,
+                "msg": e}
 
 
 async def online(cookies, connector):

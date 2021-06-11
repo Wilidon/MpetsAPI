@@ -384,8 +384,10 @@ class MpetsApi:
         pass
 
     async def show_coin_get(self):
-        # TODO
-        pass
+        resp = await main.show_coin_get(cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
+        return Box(resp)
 
     async def online(self):
         # TODO

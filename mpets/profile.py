@@ -10,7 +10,7 @@ from mpets.utils.constants import MPETS_URL
 
 async def profile(pet_id, cookies, timeout, connector, count=1):
     try:
-        club = rank_club = family_id = family_name = club_const = club_day = effect = None
+        club_id = club = rank_club = family_id = family_name = club_const = club_day = effect = None
         last_login = "online"
         beauty = coins = hearts = day = 0
         session = ClientSession(cookies=cookies, timeout=timeout,
