@@ -60,10 +60,12 @@ async def club(club_id, page, cookies, timeout, connector):
                 pets = club_inf.find("div", {"class": "blub_list_pets"})
                 pets = pets.find_all("span", {"class": ""})
                 for pet in pets:
+                    print(pet)
                     pet_id = pet.find("a", {"class": "club_member"})["href"]
                     pet_id = int(pet_id.split("=")[1])
                     name = pet.find("a", {"class": "club_member"}).text
-                    exp = pet.text.split(" -")[0].split(" ", maxsplit=1)[1]
+                    print(pet.text)
+                    exp = pet.text.rsplit(" -", maxsplit=1)[0].rsplit(" ", maxsplit=1)[1]
                     rank = pet.text.split("- ")[1]
                     players.append({"pet_id": pet_id, "name": name, "exp": exp, "rank": rank})
                 return {"status": True,
@@ -96,6 +98,7 @@ async def club(club_id, page, cookies, timeout, connector):
                     return {"status": True,
                             "club": None}
     except Exception as e:
+        raise
         # TODO
         return {"status": True,
                 "code": 0,
