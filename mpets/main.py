@@ -668,7 +668,10 @@ async def best(type, page, cookies, timeout, connector):
             if "Вы кликаете слишком быстро" in await resp.text():
                 return await best(type, page, cookies, timeout, connector)
             resp = BeautifulSoup(await resp.read(), "lxml")
-            resp = resp.find("table", {"class": "players tlist font_14 td_un"})
+            class_style = "players tlist font_14 td_un"
+            if type == 'club':
+                class_style = "players ib tlist font_14"
+            resp = resp.find("table", {"class": class_style})
             resp = resp.find_all(has_class, recursive=False)
             for pet in resp:
                 place = int(pet.find("td").text)
