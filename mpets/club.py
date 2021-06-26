@@ -428,7 +428,7 @@ async def reception(cookies, timeout, connector):
 async def club_history(club_id, type, page, cookies, timeout, connector):
     try:
         async with ClientSession(cookies=cookies,
-                                 timeout=ClientTimeout(total=timeout),
+                                 timeout=timeout,
                                  connector=connector) as session:
             params = {'id': club_id, 'type': type, 'page': page}
             history = []
@@ -464,6 +464,7 @@ async def club_history(club_id, type, page, cookies, timeout, connector):
                     'history': history}
     except Exception as e:
         # TODO
+        raise
         return {'status': False, 'code': 0, 'msg': ''}
 
 
