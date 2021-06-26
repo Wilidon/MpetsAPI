@@ -83,7 +83,7 @@ async def profile(pet_id, cookies, timeout, connector, count=1):
             return {'status': False, 'code': 1, 'msg': e}
         await profile(pet_id, cookies, timeout, connector, count + 1)
     except Exception as e:
-        return {'status': False, 'code': '', 'msg': traceback.print_exc()}
+        return {'status': False, 'code': '', 'msg': e}
 
 
 async def view_profile(pet_id, cookies, timeout, connector):
