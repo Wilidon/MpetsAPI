@@ -10,13 +10,16 @@ from mpets import models
 class MpetsApi:
     def __init__(self, name: str = None, password: str = None,
                  cookies: str = None, timeout: int = 5,
-                 connector: dict = None, fast_mode: bool = True):
+                 connector: dict = None, rucaptcha_api: str = None,
+                 fast_mode: bool = True):
         self.pet_id: int = None
         self.name: str = name
         self.password: str = password
         self.cookies = cookies
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.connector: dict = connector
+        self.rucaptcha_api: str = rucaptcha_api
+        self.captcha_file = None
         fast_mode: bool = fast_mode
         self.beauty: int = None
         self.coin: int = None
@@ -24,6 +27,9 @@ class MpetsApi:
 
         if fast_mode is False:
             ...
+
+    async def get_cookies(self):
+        return self.cookies
 
     async def user_agreement(self, agreement_confirm: bool = True,
                              params: int = 1) -> models.ReturnTrueStatus:
@@ -69,7 +75,7 @@ class MpetsApi:
             self.pet_id = resp["pet_id"]
         return Box(resp)
 
-    async def login(self) -> Box:
+    async def login(self) -> models.authorization.Login:
         """ Авторизация
 
             Resp:
@@ -78,13 +84,19 @@ class MpetsApi:
                 name (str): имя аккаунта;
                 cookies (dict): куки.
         """
-        resp = await authorization.login(name=self.name,
-                                         password=self.password,
-                                         timeout=self.timeout,
-                                         connector=self.connector)
+        resp = await authorization.get_captcha(self.timeout,
+                                               self.connector)
         if resp["status"]:
             self.cookies = resp["cookies"]
-            self.pet_id = resp["pet_id"]
+            self.captcha_file = resp["captcha"]
+        code = await authorization.solve_captcha(api_key=self.rucaptcha_api,
+                                                 captcha_file=self.captcha_file)
+        resp = await authorization.login(name=self.name,
+                                         password=self.password,
+                                         code=code,
+                                         cookies=self.cookies,
+                                         timeout=self.timeout,
+                                         connector=self.connector)
         return Box(resp)
 
     async def actions(self, amount: int = 3):
@@ -385,17 +397,24 @@ class MpetsApi:
 
     async def show_coin_get(self):
         resp = await main.show_coin_get(cookies=self.cookies,
-                                    timeout=self.timeout,
-                                    connector=self.connector)
+                                        timeout=self.timeout,
+                                        connector=self.connector)
         return Box(resp)
 
-    async def online(self):
-        # TODO
-        pass
+    async def online(self, page=1):
+        resp = await main.online(page=page,
+                                 cookies=self.cookies,
+                                 timeout=self.timeout,
+                                 connector=self.connector)
+
+        return Box(resp)
 
     async def game_time(self):
-        # TODO
-        pass
+        resp = await main.game_time(cookies=self.cookies,
+                                    timeout=self.timeout,
+                                    connector=self.connector)
+
+        return Box(resp)
 
     '''
         Модуль: forum.py
@@ -946,12 +965,25 @@ class MpetsApi:
                                           connector=self.connector)
         return Box(resp)
 
-    async def view_posters(self):
-        pass
+    async def view_anketa(self, pet_id: int):
+        resp = await profile.view_anketa(pet_id=pet_id,
+                                          cookies=self.cookies,
+                                          timeout=self.timeout,
+                                          connector=self.connector)
+        return Box(resp)
 
-    async def post_message(self, pet_id, message, gift_id=None):
-        return await profile.post_message(pet_id, message, self.cookies,
-                                          self.connector)
+    async def view_posters(self):
+        resp = await profile.view_posters(cookies=self.cookies,
+                                          timeout=self.timeout,
+                                          connector=self.connector)
+        return Box(resp)
+
+    async def post_message(self, pet_id, page=1, ):
+        return await profile.post_message(pet_id=pet_id,
+                                          page=page,
+                                          cookies=self.cookies,
+                                          timeout=self.timeout,
+                                          connector=self.connector)
 
     async def chest(self):
         resp = await profile.chest(cookies=self.cookies,

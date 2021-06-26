@@ -2,12 +2,17 @@ from loguru import logger
 from .utils.trace import request_tracer
 import json
 from aiohttp import ClientSession
+import requests_async as requests
+
 
 class FastClick(Exception):
     def __init__(self, text):
         self.txt = text
 
+
 MPETS_URL = "https://mpets.mobi/"
+
+
 def check_result(method_name: str, content_type: str, status_code: int, body: str):
     """
     Checks whether `result` is a valid API response.
@@ -34,9 +39,9 @@ async def make_get_request(method, cookies, timeout, connector):
     trace = {}
     try:
         async with ClientSession(timeout=timeout,
-                                connector=connector,
-                                cookies=cookies,
-                                trace_configs=[request_tracer(trace)]) as session:
+                                 connector=connector,
+                                 cookies=cookies,
+                                 trace_configs=[request_tracer(trace)]) as session:
             try:
                 async with session.get(url) as response:
                     if check_result(url, response.content_type, response.status, await response.text()):

@@ -762,8 +762,43 @@ async def show_coin_get(cookies, timeout, connector):
                 "msg": e}
 
 
-async def online(cookies, connector):
-    pass
+async def online(page, cookies, timeout, connector):
+    try:
+        def has_class(tag):
+            return not tag.has_attr("class")
+
+        async with ClientSession(cookies=cookies, timeout=timeout,
+                                 connector=connector) as session:
+            params = {"page": page}
+            pets = []
+            resp = await session.get("http://mpets.mobi/online", params=params)
+            await session.close()
+            if "Вы кликаете слишком быстро" in await resp.text():
+                return await online(page, cookies, timeout, connector)
+            elif "Список пуст" in await resp.text():
+                return {"status": True,
+                        "page": page,
+                        "pets": pets}
+            resp = BeautifulSoup(await resp.read(), "lxml")
+            resp = resp.find("table", {"class": "tlist mt5 mb10"})
+            resp = resp.find_all(has_class, recursive=False)
+            for pet in resp:
+                pet_id = pet.find("a", {"class": "c_brown3"})['href']
+                pet_id = int(pet_id.split("id=")[1])
+                name = pet.find("a", {"class": "c_brown3"}).text
+                beauty = int(pet.find("td", {"class": "cntr"}).text)
+                pets.append({"pet_id": pet_id,
+                             "name": name,
+                             "score": beauty})
+            return {"status": True,
+                    "page": page,
+                    "pets": pets}
+    except asyncio.exceptions.TimeoutError as e:
+        return await online(page, cookies, timeout, connector)
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
 async def game_time(cookies, timeout, connector):

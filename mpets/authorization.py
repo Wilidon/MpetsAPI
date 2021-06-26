@@ -1,8 +1,11 @@
 import asyncio
+import os
 import random
 import string
+import time
 
-from aiohttp import ClientTimeout, ClientSession
+from aiohttp import ClientSession
+from python_rucaptcha import ImageCaptcha
 
 from mpets.main import user_agreement
 from mpets.profile import profile
@@ -50,27 +53,54 @@ async def start(name, password, type, timeout, connector):
                 "msg": e}
 
 
-async def login(name, password, timeout, connector):
+async def get_captcha(timeout, connector):
     try:
         session = ClientSession(timeout=timeout, connector=connector)
-        data = {"name": name, "password": password}
+        resp = await session.get('http://mpets.mobi/captcha?r=281')
+        await session.close()
+        # Снизу говнокод, когда-нибудь, возможно, кем-то он будет исправлен.
+        # TODO add pet_id
+        for item in resp.cookies.items():
+            cookies = str(item[1]).split("=")[1].split(";")[0]
+        cookies = {"PHPSESSID": cookies}
+        filename = f"{str(time.time())}.jpg"
+        with open(filename, 'wb') as fd:
+            fd.write(await resp.read())
+        return {"status": True,
+                "captcha": filename,
+                "cookies": cookies}
+    except asyncio.TimeoutError as e:
+        return await get_captcha(timeout, connector)
+
+
+async def solve_captcha(api_key, captcha_file):
+    user_answer = ImageCaptcha.ImageCaptcha(rucaptcha_key=api_key).captcha_handler(captcha_file=captcha_file)
+    os.remove(f"./{captcha_file}")
+    if not user_answer['error']:
+        return user_answer['captchaSolve']
+
+
+async def login(name, password, code, cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies,
+                                timeout=timeout,
+                                connector=connector)
+        data = {"name": name, "password": password, "captcha": code}
         resp = await session.post(f"{MPETS_URL}/login", data=data)
         await session.close()
-        if "Неправильное Имя или Пароль" in await resp.text():
+        if "Неверная captcha. " in await resp.text():
             return {"status": False,
                     "code": 6,
+                    "msg": "Неверная captcha. Неправильное Имя или Пароль"}
+        if "Неправильное Имя или Пароль" in await resp.text():
+            return {"status": False,
+                    "code": 7,
                     "msg": "Incorrect name or password"}
         elif "Ваш питомец заблокирован" in await resp.text():
             return {"status": False,
-                    "code": 7,
+                    "code": 8,
                     "msg": "This account has blocked"}
         elif "Прочтите, это важно!" in await resp.text():
-            cookies = session.cookie_jar.filter_cookies(MPETS_URL)
-            for key, cookie in cookies.items():
-                if cookie.key == "PHPSESSID":
-                    cookies = {"PHPSESSID": cookie.value}
-                if cookie.key == "id":
-                    pet_id = int(cookie.value)
             resp = await user_agreement(agreement_confirm=True,
                                         params=1,
                                         cookies=cookies,
@@ -78,7 +108,6 @@ async def login(name, password, timeout, connector):
                                         connector=connector)
             if resp['status'] is True:
                 return {"status": True,
-                        "pet_id": pet_id,
                         "name": name,
                         "cookies": cookies}
             else:
@@ -86,19 +115,12 @@ async def login(name, password, timeout, connector):
                         "code": -1,
                         "msg": f"не удалось принять соглашение {resp['msg']}"}
         elif "Магазин" in await resp.text():
-            cookies = session.cookie_jar.filter_cookies(MPETS_URL)
-            for key, cookie in cookies.items():
-                if cookie.key == "PHPSESSID":
-                    cookies = {"PHPSESSID": cookie.value}
-                if cookie.key == "id":
-                    pet_id = int(cookie.value)
             return {"status": True,
-                    "pet_id": pet_id,
                     "name": name,
                     "cookies": cookies}
     except asyncio.TimeoutError as e:
-        return await login(name, password, timeout, connector)
+        return await login(name, password, code, cookies, timeout, connector)
     except Exception as e:
-        return {"status": "error",
+        return {"status": False,
                 "code": 0,
                 "msg": e}

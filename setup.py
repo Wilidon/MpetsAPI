@@ -11,6 +11,7 @@ setup(name='mpets',
           'BeautifulSoup4',
           'lxml',
           'aiohttp-socks',
-          'pydantic'
+          'pydantic',
+          'python_rucaptcha',
       ],
       zip_safe=False)

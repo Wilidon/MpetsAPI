@@ -250,9 +250,115 @@ async def sell_item(item_id, cookies, timeout, connector):
                 "msg": e}
 
 
-async def view_posters(cookies):
-    pass
+async def view_posters(cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        params = {"r": 1}
+        resp = await session.get(f"{MPETS_URL}/view_posters", params=params)
+        await session.close()
+        resp = BeautifulSoup(await resp.read(), "lxml")
+        players = resp.find_all("div", {"class": "poster mb3"})
+        posters = []
+        for player in players:
+            unread = False
+            pet_id = player.find_all("a")[0]['href'].split("=")[1]
+            pet_id = int(pet_id)
+            name = player.find_all("a")[0].text
+            text = player.find_all("a")[1].text.replace("	", "").replace("\r", "").replace("\n", "")
+            post_date = player.find("div", {"class": "pl_date"}).text.replace("	", "")
+            post_date = post_date.replace("\n\r\n", "").replace("\n", "")
+            # Опредлеяем прочитано сообщение или нет
+            temp = player.find("div", {"class": "pl_cont"}).find_all("a")[1]['class'][0]
+            if temp == 'unread_post':
+                unread = True
+            posters.append({"pet_id": pet_id,
+                            "name": name,
+                            "text": text,
+                            "post_date": post_date,
+                            "unread": unread})
+        return {'status': True,
+                "players": posters}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
 
 
-async def post_message(pet_id, message, gift_id, cookies, connector):
+async def post_message(pet_id, page, cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        params = {"pet_id": pet_id, "page": page}
+        resp = await session.get(f"{MPETS_URL}/post_message", params=params)
+        await session.close()
+        resp = BeautifulSoup(await resp.read(), "lxml")
+        msgs = resp.find_all("div", {"class": "msg mrg_msg1 mt5 c_brown4"})
+        messages = []
+        for message in msgs:
+            pet_id = message.find("a")['href'].split("=")[1]
+            pet_id = int(pet_id)
+            name = message.find_all("a")[0].text
+            text = message.find("div", {"class": "post_content"}).text
+            post_date = message.find("span", {"class": "post_date nowrap"}).text.replace("	", "")
+            post_date = post_date.replace("\n\r\n", "").replace("\n", "")
+            messages.append({"pet_id": pet_id,
+                             "name": name,
+                             "text": text,
+                             "post_date": post_date})
+        return {'status': True,
+                "messages": messages}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
+
+
+async def view_anketa(pet_id, cookies, timeout, connector):
+    try:
+        async with ClientSession(cookies=cookies,
+                                 timeout=timeout,
+                                 connector=connector) as session:
+            about = real_name = gender = city = birthday = ank = None
+            params = {'pet_id': pet_id}
+            resp = await session.get("http://mpets.mobi/view_anketa",
+                                     params=params)
+            prof = BeautifulSoup(await resp.read(), "lxml")
+            if "Вы кликаете слишком быстро." in await resp.text():
+                return await view_anketa(pet_id, cookies, timeout, connector)
+            anketa = prof.find_all("span", {"class": "anketa_head ib mb3"})
+            for i in range(len(anketa)):
+                if "себе" in str(anketa[i].text):
+                    about = prof.find_all("div", {"class": "mb10"})[i].text
+                elif "Реальное имя" in anketa[i].text:
+                    real_name = prof.find_all("div", {"class": "mb10"})[i].text
+                elif "Пол" in anketa[i].text:
+                    gender = prof.find_all("div", {"class": "mb10"})[i].text
+                    gender = gender.replace("\r", "").replace("\n", "")
+                    gender = gender.replace("\t", "")
+                elif "Город" in anketa[i].text:
+                    city = prof.find_all("div", {"class": "mb10"})[i].text
+                    city = city.replace("\r\n\r\n\t\t\t", "").replace("\r\n\t\t\t\t\t\t\t\n", "")
+                elif "Дата рождения" in anketa[i].text:
+                    birthday = prof.find_all("div", {"class": "mb10"})[i].text
+                    birthday = birthday.replace("\r\n\t\t\t\t", "").replace("\t\t\t\t\t\t\t", "")
+                elif "Анкета" in anketa[i].text:
+                    ank = prof.find_all("div", {"class": "mb10"})[i].text
+            return {'status': True,
+                    'pet_id': int(pet_id),
+                    'about': about,
+                    'real_name': real_name,
+                    'gender': gender,
+                    'city': city,
+                    'birthday': birthday,
+                    'ank': ank}
+    except asyncio.TimeoutError as e:
+        return await view_anketa(pet_id, cookies, timeout, connector)
+    except Exception as e:
+        return {'status': False,
+                'code': 12,
+                'msg': e}
+
+
+async def post_send(pet_id, message, gift_id, cookies, connector):
     pass
