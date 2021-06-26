@@ -360,5 +360,46 @@ async def view_anketa(pet_id, cookies, timeout, connector):
                 'msg': e}
 
 
+async def view_gifts(pet_id, page, cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies,
+                                timeout=timeout,
+                                connector=connector)
+        params = {'pet_id': pet_id, "page": page}
+        players = []
+        resp = await session.get("http://mpets.mobi/view_gifts",
+                                 params=params, cookies=cookies)
+        gifts = BeautifulSoup(await resp.read(), "lxml")
+        if "Вы кликаете слишком быстро." in await resp.text():
+            return await view_gifts(pet_id, page, cookies, timeout, connector)
+        items = gifts.find_all('div', {'class': 'item'})
+        for item in items:
+            name, pet_id = None, None
+            present_id = item.find("img", {"class": "item_icon"})["src"]
+            present_id = present_id.split("present")[1].split(".")[0]
+            pet_id = item.find("a", {"class": "pet_name il"})
+            if pet_id:
+                name = pet_id.text
+                pet_id = pet_id["href"].split("=")[1]
+            date = item.find("span", {"class": "gray_color font_13"}).text
+            date = date.split("получен")[1]
+            # НЕ ДЕЛАЙ БЛЯТЬ PET_ID B PRESENT_ID ЧИСЛОВЫМ ТИПОМ
+
+            # 25.06.2021
+            # добавили в уп капчу, половину нормального кода приходится переписыать на быструю руку.
+            # короче pet_id в принципе можно сделать интовым, но нужна проверка скрытый подарок или нет
+            players.append({"pet_id": pet_id, "name": name,
+                            "present_id": present_id, "date": date})
+        return {'status': True,
+                'page': page,
+                'players': players}
+    except asyncio.TimeoutError as e:
+        return {'status': False, 'code': '', 'msg': e}
+    except Exception as e:
+        return {'status': False,
+                'code': 12,
+                'msg': e}
+
+
 async def post_send(pet_id, message, gift_id, cookies, connector):
     pass

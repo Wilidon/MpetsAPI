@@ -972,6 +972,13 @@ class MpetsApi:
                                           connector=self.connector)
         return Box(resp)
 
+    async def view_gifts(self, pet_id, page=1):
+        return await profile.view_gifts(pet_id=pet_id,
+                                        page=page,
+                                        cookies=self.cookies,
+                                        timeout=self.timeout,
+                                        connector=self.connector)
+
     async def view_posters(self):
         resp = await profile.view_posters(cookies=self.cookies,
                                           timeout=self.timeout,

@@ -96,7 +96,6 @@ async def club(club_id, page, cookies, timeout, connector):
                     return {"status": True,
                             "club": None}
     except Exception as e:
-        raise
         # TODO
         return {"status": True,
                 "code": 0,
@@ -110,10 +109,10 @@ async def want(cookies, connector):
             params = {'want': 1}
             await session.get("http://mpets.mobi/clubs", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {'status': True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def accept_invite(club_id, cookies, connector):
@@ -123,10 +122,10 @@ async def accept_invite(club_id, cookies, connector):
             params = {'id': club_id}
             await session.get("http://mpets.mobi/accept_invite", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {'status': True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def decline_invite(club_id, cookies, connector):
@@ -136,10 +135,10 @@ async def decline_invite(club_id, cookies, connector):
             params = {'id': club_id}
             await session.get("http://mpets.mobi/decline_invite", params=params)
             await session.close()
-            return {'status': 'ok'}
+            return {'status': True}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def enter_club(club_id, decline, cookies, connector):
@@ -153,22 +152,22 @@ async def enter_club(club_id, decline, cookies, connector):
                 if "Вы кликаете слишком быстро." in await resp.text():
                     return await enter_club(club_id, cookies, connector)
                 elif "Заявка успешно отправлена!" in await resp.text():
-                    return {'status': 'ok'}
+                    return {'status': True}
                 elif "Вы уже состоите в клубе" in await resp.text():
-                    return {'status': 'error', 'code': 0, 'msg': 'Вы уже состоите в клубе'}
+                    return {'status': False, 'code': 0, 'msg': 'Вы уже состоите в клубе'}
                 elif "Вы уже отправляли в этот клуб заявку" in await resp.text():
-                    return {'status': 'error', 'code': 0, 'msg': 'Вы уже отправляли в этот клуб заявку'}
+                    return {'status': False, 'code': 0, 'msg': 'Вы уже отправляли в этот клуб заявку'}
                 elif "Вы отправляли заявку в клуб" in await resp.text():
                     params = {'id': club_id, 'yes': 1}
                     resp = await session.get("http://mpets.mobi/enter_club", params=params)
                     if "Вы кликаете слишком быстро." in await resp.text():
-                        return await enter_club(club_id, cookies, connector)
+                        return await enter_club(club_id, decline, cookies, connector)
                     elif "Заявка успешно отправлена!" in await resp.text():
-                        return {'status': 'ok'}
+                        return {'status': True}
                     elif "Вы уже состоите в клубе" in await resp.text():
-                        return {'status': 'error', 'code': 0, 'msg': 'Вы уже состоите в клубе'}
+                        return {'status': False, 'code': 0, 'msg': 'Вы уже состоите в клубе'}
                     elif "Вы уже отправляли в этот клуб заявку" in await resp.text():
-                        return {'status': 'error', 'code': 0, 'msg': 'Вы уже отправляли в этот клуб заявку'}
+                        return {'status': False, 'code': 0, 'msg': 'Вы уже отправляли в этот клуб заявку'}
             else:
                 params = {'id': club_id, 'decline': 1}
                 resp = await session.get("http://mpets.mobi/enter_club", params=params)
@@ -176,11 +175,11 @@ async def enter_club(club_id, decline, cookies, connector):
                 if "Вы кликаете слишком быстро." in await resp.text():
                     return await enter_club(club_id, cookies, connector)
                 elif "Заявка отменена!" in await resp.text():
-                    return {'status': 'ok'}
+                    return {'status': True}
 
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def create_club(name, cookies, connector):
@@ -236,7 +235,7 @@ async def club_budget(club_id, cookies, connector):
                     resp.find("div", {"class": "p3 left"}).find_all("img", {"class": "price_img"})[
                         0].next_element.split(
                         ": ")[1]
-            return {'status': 'ok',
+            return {'status': True,
                     'coins': coins,
                     'hearts': hearts,
                     'max_coins': max_coins}
@@ -288,7 +287,7 @@ async def club_budget_history(club_id, sort, page, cookies, connector):
                 last_reset_name = last_reset_name.split("(")[1].split(")")[0]
             except Exception as e:
                 pass
-            return {'status': 'ok',
+            return {'status': True,
                     'club_id': club_id,
                     'sort': sort,
                     'page': page,
@@ -298,7 +297,7 @@ async def club_budget_history(club_id, sort, page, cookies, connector):
                     'last_reset_name': last_reset_name}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def club_budget_history_all(club_id, sort, page, cookies, connector):
@@ -310,7 +309,7 @@ async def club_budget_history_all(club_id, sort, page, cookies, connector):
             resp = await session.get("http://mpets.mobi/club_budget_history_all", params=params)
             await session.close()
             if "Вы кликаете слишком быстро." in await resp.text():
-                return await club_budget_history(club_id, sort, page, cookies, connector)
+                return await club_budget_history_all(club_id, sort, page, cookies, connector)
             resp = BeautifulSoup(await resp.read(), "lxml")
             pets = resp.find("div", {"class": "wr_c4 left p10"}).find_all("div", {'class': 'td_un'})
             for pet in pets:
@@ -318,14 +317,14 @@ async def club_budget_history_all(club_id, sort, page, cookies, connector):
                 name = pet.find("a").next_element
                 count = int(pet.text.split(": ")[1].replace('\t', ''))
                 players.append({'pet_id': pet_id, 'name': name, 'count': count})
-            return {'status': 'ok',
+            return {'status': True,
                     'club_id': club_id,
                     'sort': sort,
                     'page': page,
                     'players': players}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def forums(club_id, cookies, timeout, connector):
@@ -333,12 +332,12 @@ async def forums(club_id, cookies, timeout, connector):
         async with ClientSession(cookies=cookies,
                                  timeout=ClientTimeout(total=timeout),
                                  connector=connector) as session:
-            params = {'id': forum_id}
+            params = {'id': club_id}
             forums_id = []
             resp = await session.get("http://mpets.mobi/forum", params=params)
             await session.close()
             if "Вы кликаете слишком быстро." in await resp.text():
-                return await forums(forum_id, cookies, connector)
+                return await forums(club_id, cookies, connector)
             resp = BeautifulSoup(await resp.read(), "lxml")
             threads = resp.find_all("div", {"class": "mbtn orange"})
             for forum in threads:
@@ -346,12 +345,12 @@ async def forums(club_id, cookies, timeout, connector):
                 name = forum.text
                 forums_id.append(
                     {'forum_id': forum_id, 'name': name})
-            return {'status': 'ok',
+            return {'status': True,
                     'club_id': club_id,
                     'forums_id': forums_id}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def chat(club_id, page, cookies, timeout, connector):
@@ -398,7 +397,7 @@ async def chat(club_id, page, cookies, timeout, connector):
                     'messages': messages}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def chat_message(club_id, message, cookies, timeout, connector):
@@ -459,13 +458,13 @@ async def club_history(club_id, type, page, cookies, timeout, connector):
                          'date': date})
                 except:
                     pass
-            return {'status': 'ok',
+            return {'status': True,
                     'club_id': club_id,
                     'page': page,
                     'history': history}
     except Exception as e:
         # TODO
-        return {'status': 'error', 'code': 0, 'msg': ''}
+        return {'status': False, 'code': 0, 'msg': ''}
 
 
 async def club_hint(cookies, timeout, connector):
