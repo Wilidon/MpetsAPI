@@ -2,6 +2,7 @@ import aiohttp
 from aiohttp import ClientSession
 from aiohttp_socks import ProxyConnector
 from box import Box
+from loguru import logger
 
 from mpets import authorization, forum, main, profile, club
 from mpets import models
@@ -956,6 +957,7 @@ class MpetsApi:
                                      cookies=self.cookies,
                                      timeout=self.timeout,
                                      connector=self.connector)
+        logger.debug(resp)
         return Box(resp)
 
     async def view_profile(self, pet_id: int):
