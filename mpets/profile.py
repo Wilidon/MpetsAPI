@@ -42,7 +42,7 @@ async def profile(pet_id, cookies, timeout, connector, count=1):
             elif 'Семья' in ac.text:
                 family_id = int(ac.find("a", {'darkgreen_link'})['href'].split("=")[1])
                 family_name = ac.find("a", {'darkgreen_link'}).text
-            elif 'Красота' in ac.text:
+            elif 'Красота:' in ac.text:
                 beauty = int(ac.text.split(": ")[1])
             elif 'Клуб:' in ac.text:
                 club_id = int(ac.find("a", {'class': 'darkgreen_link'})['href'].split("=")[1])
@@ -120,7 +120,7 @@ async def view_profile(pet_id, cookies, timeout, connector):
                 elif 'Семья' in ac.text:
                     family_id = int(ac.find("a", {'darkgreen_link'})['href'].split("=")[1])
                     family_name = ac.find("a", {'darkgreen_link'}).text
-                elif 'Красота' in ac.text:
+                elif 'Красота:' in ac.text:
                     beauty = int(ac.text.split(": ")[1])
                 elif 'Клуб:' in ac.text:
                     club_id = int(ac.find("a", {'class': 'darkgreen_link'})['href'].split("=")[1])
