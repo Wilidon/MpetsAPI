@@ -957,7 +957,6 @@ class MpetsApi:
                                      cookies=self.cookies,
                                      timeout=self.timeout,
                                      connector=self.connector)
-        logger.debug(resp)
         return Box(resp)
 
     async def view_profile(self, pet_id: int):
