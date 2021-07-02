@@ -574,20 +574,18 @@ class MpetsApi:
                                        connector=self.connector)
         return Box(resp)
 
-    async def message_edit(self, message_id: int, thread_id: int, message: str):
+    async def message_edit(self, message_id: int, thread_id: int = 1):
         """ Отредактировать сообщение
 
             Args:
                 message_id (int): id сообщения;
-                thread_id (int): id топа;
-                message (str): сообщение.
+                thread_id (int): id топа.
 
             Resp:
                 status (boolean): статус запроса.
         """
         resp = await forum.message_edit(message_id=message_id,
                                         thread_id=thread_id,
-                                        message=message,
                                         cookies=self.cookies,
                                         timeout=self.timeout,
                                         connector=self.connector)
