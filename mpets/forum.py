@@ -252,25 +252,25 @@ async def thread_vote(thread_id, vote, cookies, timeout, connector):
 async def message_edit(message_id, thread_id, cookies, timeout, connector):
     # TODO return post_edit_date
     try:
-            async with ClientSession(cookies=cookies, timeout=timeout,
-                                     connector=connector) as session:
-                params = {"id": message_id, "thread_id": thread_id,
-                          "page": 1}
-                resp = await session.get(f"{MPETS_URL}/message_edit", params=params)
-                await session.close()
-                r_text = await resp.text()
-                resp = BeautifulSoup(await resp.read(), "lxml")
-                if "Содержание" in r_text:
-                    form = resp.find("form", {"method": "POST"})
-                    thread_id = form.find("input", {"name": "thread_id"})['value']
-                    message = form.find("textarea").text
-                    return {"status": True,
-                            "thread_id": int(thread_id),
-                            "message_id": message_id,
-                            "message": message}
-                else:
-                    return {"status": True,
-                            "message": None}
+        async with ClientSession(cookies=cookies, timeout=timeout,
+                                 connector=connector) as session:
+            params = {"id": message_id, "thread_id": thread_id,
+                      "page": 1}
+            resp = await session.get(f"{MPETS_URL}/message_edit", params=params)
+            await session.close()
+            r_text = await resp.text()
+            resp = BeautifulSoup(await resp.read(), "lxml")
+            if "Содержание" in r_text:
+                form = resp.find("form", {"method": "POST"})
+                thread_id = form.find("input", {"name": "thread_id"})['value']
+                message = form.find("textarea").text
+                return {"status": True,
+                        "thread_id": int(thread_id),
+                        "message_id": message_id,
+                        "message": message}
+            else:
+                return {"status": True,
+                        "message": None}
     except Exception as e:
         # TODO
         return {"status": False,

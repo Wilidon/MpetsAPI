@@ -32,6 +32,12 @@ class MpetsApi:
     async def get_cookies(self):
         return self.cookies
 
+    async def check_cookies(self):
+        resp = await main.check_cookies(cookies=self.cookies,
+                                        timeout=self.timeout,
+                                        connector=self.connector)
+        return Box(resp)
+
     async def user_agreement(self, agreement_confirm: bool = True,
                              params: int = 1) -> models.ReturnTrueStatus:
         """Принимает пользовательское соглашение
@@ -966,9 +972,9 @@ class MpetsApi:
 
     async def view_anketa(self, pet_id: int):
         resp = await profile.view_anketa(pet_id=pet_id,
-                                          cookies=self.cookies,
-                                          timeout=self.timeout,
-                                          connector=self.connector)
+                                         cookies=self.cookies,
+                                         timeout=self.timeout,
+                                         connector=self.connector)
         return Box(resp)
 
     async def view_gifts(self, pet_id, page=1):

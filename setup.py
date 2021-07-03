@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='mpets',
-      version='0.6.6',
+      version='0.6.7',
       description='API for game AmazingPets',
       packages=['mpets', 'mpets.utils', 'mpets.models'],
       author_email='wilidon@bk.ru',

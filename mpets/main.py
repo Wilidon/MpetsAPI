@@ -859,10 +859,17 @@ async def open_gold_chest(cookies, timeout, connector):
             resp = await session.get(f"{MPETS_URL}/gold_chest/open")
             resp = BeautifulSoup(await resp.read(), "lxml")
             chest = resp.find("div", {"class": "lplate mt10"})
-            found = chest.find("div", {"class": "c_green mt3"}).text
+            if "VIP-аккаунт" in chest:
+                return {"status": True,
+                        "found": "VIP-аккаунт на 48ч"}
+            elif "новый" in chest:
+                return {"status": True,
+                        "found": "Еда или игра"}
+            else:
+                found = chest.find("div", {"class": "c_green mt3"}).text
             await session.close()
             return {"status": True,
-                    "found": found}
+                    "found": chest}
     except Exception as e:
         return {"status": "error",
                 "code": 0,
@@ -881,6 +888,24 @@ async def check_ban(cookies, timeout, connector):
         else:
             return {"status": True,
                     "ban": False}
+    except Exception as e:
+        return {"status": False,
+                "code": 0,
+                "msg": e}
+
+
+async def check_cookies(cookies, timeout, connector):
+    try:
+        session = ClientSession(cookies=cookies, timeout=timeout,
+                                connector=connector)
+        resp = await session.get(f"{MPETS_URL}/main")
+        await session.close()
+        if "/main" in str(resp.url):
+            return {"status": True,
+                    "cookies": True}
+        else:
+            return {"status": True,
+                    "cookies": False}
     except Exception as e:
         return {"status": False,
                 "code": 0,

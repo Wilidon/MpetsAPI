@@ -38,6 +38,11 @@ async def start(name, password, type, timeout, connector):
                 resp = await profile(pet_id, cookies, timeout, connector)
                 if resp["status"] is False:
                     return resp
+                await user_agreement(agreement_confirm=True,
+                                     params=1,
+                                     cookies=cookies,
+                                     timeout=timeout,
+                                     connector=connector)
                 return {"status": True,
                         "pet_id": pet_id,
                         "name": resp["name"],
