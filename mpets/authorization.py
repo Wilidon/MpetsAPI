@@ -79,7 +79,7 @@ async def get_captcha(timeout, connector):
 
 
 async def solve_captcha(api_key, captcha_file):
-    user_answer = ImageCaptcha.ImageCaptcha(rucaptcha_key=api_key).captcha_handler(captcha_file=captcha_file)
+    user_answer = ImageCaptcha.ImageCaptcha(rucaptcha_key=api_key, service_type="rucaptcha").captcha_handler(captcha_file=captcha_file)
     os.remove(f"./{captcha_file}")
     if not user_answer['error']:
         return user_answer['captchaSolve']
